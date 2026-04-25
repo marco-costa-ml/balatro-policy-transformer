@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "source_directory": "data/parsed",
+  "output_directory": "data/granularized",
+  "partition_format": "video_id={video_id}",
+  "file_name": "run_{index:03d}.json",
+  "decompose_actions": [
+    "DiscardHand",
+    "PlayHand"
+  ],
+  "note": "PlayHand and DiscardHand events are expanded into SelectCard steps ordered by the player's original card-selection order (position_in_zone in CurrentHandSelected), followed by a final commit action. The unselected card pool in current_hand is shuffled at each step.",
+  "event_fields": {
+    "all_events": {
+      "frame_idx": "int — source frame number",
+      "page_name": "str — game UI page",
+      "action": "str — SelectCard | PlayHand | DiscardHand | StartNewRun | …",
+      "state": "object — parsed OCR game state",
+      "objects": "[object] — context objects excluding hand cards"
+    },
+    "SelectCard_only": {
+      "step_index": "int — 0-based index within the selection sequence",
+      "source_action": "str — PlayHand | DiscardHand (the original action being decomposed)",
+      "target_card": "object — the card being selected at this step",
+      "selected_cards": "[object] — cards selected in prior steps (in selection order)",
+      "current_hand": "[object] — shuffled pool of not-yet-selected cards"
+    },
+    "commit_step_only": {
+      "step_index": "int — equals number of selected cards (final step)",
+      "source_action": "str — PlayHand | DiscardHand",
+      "target_card": "null",
+      "selected_cards": "[object] — all selected cards in selection order",
+      "current_hand": "[object] — remaining unselected cards (original CurrentHand)"
+    }
+  },
+  "card_object_fields": {
+    "slot_id": "int",
+    "class_id": "int — 0-399; see data/class_map.csv",
+    "object_type": "str — card | deck | joker | consumable | …",
+    "card": "null | {rank, rank_index, suit, suit_index, is_ace, is_face}",
+    "edition": "null | str — e_foil | e_holo | e_negative | e_polychrome",
+    "modifier": "null | str — m_bonus | m_glass | m_gold | m_lucky | m_mult | m_steel | m_stone | m_wild",
+    "seal": "null | str — blue_seal | gold_seal | purple_seal | red_seal",
+    "stickers": "[str] — rental | perishable | eternal (jokers only)",
+    "is_debuffed": "bool"
+  }
+}

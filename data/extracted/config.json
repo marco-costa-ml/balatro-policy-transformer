@@ -1,0 +1,18 @@
+{
+  "dataset_name": "balatro_video_event_classification_tool_extracted",
+
+  "root": "data/extracted",
+
+  "structure": {
+    "partition_key": "video_id",
+    "partition_format": "video_id={video_id}",
+
+    "files": {
+      "events": "events.json"
+    }
+  },
+
+  "description": {
+    "events": "Event-centric state/action data extracted per video"
+  }
+}

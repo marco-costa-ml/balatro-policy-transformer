@@ -1,0 +1,168 @@
+{
+  "schema_version": "1.1.0",
+  "source_directory": "data/extracted",
+  "output_directory": "data/parsed",
+  "partition_format": "video_id={video_id}",
+  "file_name": "run_{index:03d}.json",
+  "split_action": "StartNewRun",
+  "note": "Events before the first StartNewRun in each video are discarded. The StartNewRun event itself is included as the first event of its run.",
+  "ocr_fields": {
+    "hands_left": {
+      "type": "int | null",
+      "raw_key": "state.ocr.hands_left",
+      "transform": "direct int cast"
+    },
+    "discards_left": {
+      "type": "int | null",
+      "raw_key": "state.ocr.discards_left",
+      "transform": "direct int cast"
+    },
+    "dollars": {
+      "type": "int | null",
+      "raw_key": "state.ocr.dollars",
+      "transform": "strip non-digits (e.g. '$'), cast int"
+    },
+    "ante": {
+      "type": "int | null",
+      "raw_key": "state.ocr.ante",
+      "transform": "split on '/', take numerator, cast int"
+    },
+    "round": {
+      "type": "int | null",
+      "raw_key": "state.ocr.round",
+      "transform": "direct int cast"
+    },
+    "deck_remaining": {
+      "type": "int | null",
+      "raw_key": "state.ocr.deck_values",
+      "transform": "split on '/', take numerator, cast int"
+    },
+    "deck_total": {
+      "type": "int | null",
+      "raw_key": "state.ocr.deck_values",
+      "transform": "split on '/', take denominator, cast int"
+    },
+    "round_score": {
+      "type": "int | null",
+      "raw_key": "state.ocr.round_score",
+      "transform": "strip non-digits (e.g. '*'), cast int"
+    }
+  },
+  "object_fields": {
+    "slot_id": {
+      "type": "int",
+      "source": "children.slot_id"
+    },
+    "zone": {
+      "type": "string",
+      "source": "state.zones key",
+      "known_values": [
+        "BlindToken",
+        "CurrentConsumables",
+        "CurrentDeck",
+        "CurrentHand",
+        "CurrentHandSelected",
+        "CurrentJokers",
+        "CurrentStake"
+      ]
+    },
+    "position_in_zone": {
+      "type": "int",
+      "source": "object.position_in_zone"
+    },
+    "class_id": {
+      "type": "int",
+      "source": "object.class_id",
+      "description": "Detector class ID 0-399; see data/class_map.csv"
+    },
+    "object_type": {
+      "type": "string",
+      "description": "Inferred from class_id: card | deck | joker | consumable | voucher | blind | pack | tag | stake | edition | modifier | seal | sticker | debuffed_marker | unknown"
+    },
+    "card": {
+      "type": "null | object",
+      "description": "Non-null only when object_type == 'card' (class_id 0-51)",
+      "fields": {
+        "rank": "string — ace, 2-10, jack, queen, king",
+        "rank_index": "int — 0 (ace) to 12 (king)",
+        "suit": "string — spades | hearts | diamonds | clubs",
+        "suit_index": "int — 0 (spades) to 3 (clubs)",
+        "is_ace": "bool",
+        "is_face": "bool — true for jack, queen, king"
+      }
+    },
+    "edition": {
+      "type": "null | string",
+      "source": "children.edition_class_id",
+      "class_id_range": [
+        68,
+        71
+      ],
+      "values": [
+        "e_foil",
+        "e_holo",
+        "e_negative",
+        "e_polychrome"
+      ]
+    },
+    "modifier": {
+      "type": "null | string",
+      "source": "children.modifier_class_id",
+      "class_id_range": [
+        72,
+        79
+      ],
+      "values": [
+        "m_bonus",
+        "m_glass",
+        "m_gold",
+        "m_lucky",
+        "m_mult",
+        "m_steel",
+        "m_stone",
+        "m_wild"
+      ]
+    },
+    "seal": {
+      "type": "null | string",
+      "source": "children.seal_class_id",
+      "class_id_range": [
+        232,
+        235
+      ],
+      "values": [
+        "blue_seal",
+        "gold_seal",
+        "purple_seal",
+        "red_seal"
+      ]
+    },
+    "stickers": {
+      "type": "[string]",
+      "source": "children.sticker_1_class_id, children.sticker_2_class_id",
+      "class_ids": [
+        367,
+        368,
+        369
+      ],
+      "values": [
+        "rental",
+        "perishable",
+        "eternal"
+      ],
+      "max_count": 2
+    },
+    "is_debuffed": {
+      "type": "bool",
+      "source": "children.debuffed_class_id",
+      "trigger_class_id": 230
+    }
+  },
+  "action_fields": {
+    "actions": {
+      "type": "[string]",
+      "source": "event.actions[].type",
+      "description": "Action names at this decision point, e.g. PlayHand, DiscardHand, StartNewRun"
+    }
+  }
+}
