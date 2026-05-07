@@ -180,7 +180,7 @@ def parse_object(
     zone: str,
     raw: dict[str, Any],
     class_map: dict[int, str],
-) -> dict[str, Any]:
+) -> dict[str, Any] | None:
     """
     Normalise one raw zone-object into a clean parsed record.
 
@@ -190,8 +190,15 @@ def parse_object(
              video_id, age_frames, time_on_screen_seconds, obs_count,
              track_density, is_observed, x1/y1/x2/y2, *_slot_id (children)
     """
-    class_id = int(raw["class_id"])
-    children: dict[str, Any] = raw.get("children") or {}
+    if not isinstance(raw, dict):
+        return None
+
+    class_id = _resolve(raw.get("class_id"))
+    if class_id is None:
+        return None
+
+    children_raw = raw.get("children")
+    children: dict[str, Any] = children_raw if isinstance(children_raw, dict) else {}
 
     card: dict[str, Any] | None = (
         _card_fields(class_id) if CARD_MIN <= class_id <= CARD_MAX else None
@@ -228,10 +235,13 @@ def parse_object(
     dcid = _resolve(children.get("debuffed_class_id"))
     is_debuffed = dcid == DEBUFFED_CLASS_ID
 
+    slot_id = _resolve(children.get("slot_id"))
+    pos = _resolve(raw.get("position_in_zone"))
+
     return {
-        "slot_id":          int(children.get("slot_id") or 0),
+        "slot_id":          slot_id if slot_id is not None else 0,
         "zone":             zone,
-        "position_in_zone": int(raw.get("position_in_zone") or 0),
+        "position_in_zone": pos if pos is not None else 0,
         "class_id":         class_id,
         "object_type":      _object_type(class_id, class_map),
         "card":             card,
@@ -247,12 +257,29 @@ def parse_zones(
     zones: dict[str, list[dict[str, Any]]],
     class_map: dict[int, str],
 ) -> list[dict[str, Any]]:
-    """Flatten all zone objects into a single list sorted by zone then position."""
+    """Flatten all zone objects into a single list sorted by zone then position.
+
+    Missing zones are allowed. Duplicate objects are preserved as-is.
+    """
     objects: list[dict[str, Any]] = []
+    if not isinstance(zones, dict):
+        return objects
+
     for zone_name, zone_objs in zones.items():
-        for raw_obj in zone_objs:
-            objects.append(parse_object(zone_name, raw_obj, class_map))
-    objects.sort(key=lambda o: (o["zone"], o["position_in_zone"]))
+        # Be tolerant to malformed single-object zone payloads.
+        if isinstance(zone_objs, dict):
+            iter_objs = [zone_objs]
+        elif isinstance(zone_objs, list):
+            iter_objs = zone_objs
+        else:
+            continue
+
+        for raw_obj in iter_objs:
+            parsed = parse_object(str(zone_name), raw_obj, class_map)
+            if parsed is not None:
+                objects.append(parsed)
+
+    objects.sort(key=lambda o: (o["zone"], o["position_in_zone"], o["slot_id"]))
     return objects
 
 
@@ -260,9 +287,85 @@ def parse_zones(
 # Action parsing
 # ---------------------------------------------------------------------------
 
-def parse_actions(raw_actions: list[dict[str, Any]]) -> list[str]:
-    """Extract action-name strings from [{"type": "PlayHand"}, ...] list."""
-    return [str(a["type"]) for a in raw_actions if isinstance(a, dict) and "type" in a]
+def parse_actions(raw_actions: Any) -> list[str]:
+    """Extract normalized action-name strings from mixed action encodings."""
+    if raw_actions is None:
+        return []
+
+    # Allow a single action string payload.
+    if isinstance(raw_actions, str):
+        return [raw_actions]
+
+    # Allow one object payload: {"type": "..."}.
+    if isinstance(raw_actions, dict):
+        if "type" in raw_actions:
+            return [str(raw_actions["type"])]
+        return []
+
+    out: list[str] = []
+    if isinstance(raw_actions, list):
+        for action in raw_actions:
+            if isinstance(action, str):
+                out.append(action)
+            elif isinstance(action, dict) and "type" in action:
+                out.append(str(action["type"]))
+    return out
+
+
+def _extract_action_subtype(action_id: str) -> str | None:
+    """
+    Extract subtype token from predictor-style IDs:
+      pred_<subtype>_<frame>_<idx>
+    Example:
+      pred_buyvoucher_12258_47 -> buyvoucher
+    """
+    m = re.fullmatch(r"pred_(.+)_\d+_\d+", action_id)
+    return m.group(1) if m else None
+
+
+def parse_action_details(raw_actions: Any) -> list[dict[str, Any]]:
+    """
+    Parse action metadata while preserving type/id/subtype.
+
+    Output schema:
+      [{ "type": str, "id": str | null, "subtype": str | null }, ...]
+    """
+    details: list[dict[str, Any]] = []
+
+    if raw_actions is None:
+        return details
+
+    if isinstance(raw_actions, str):
+        details.append({"type": raw_actions, "id": None, "subtype": None})
+        return details
+
+    if isinstance(raw_actions, dict):
+        action_type = raw_actions.get("type")
+        if action_type is None:
+            return details
+        action_id = raw_actions.get("id")
+        action_id_str = str(action_id) if action_id is not None else None
+        details.append({
+            "type": str(action_type),
+            "id": action_id_str,
+            "subtype": _extract_action_subtype(action_id_str) if action_id_str else None,
+        })
+        return details
+
+    if isinstance(raw_actions, list):
+        for action in raw_actions:
+            if isinstance(action, str):
+                details.append({"type": action, "id": None, "subtype": None})
+                continue
+            if isinstance(action, dict) and action.get("type") is not None:
+                action_id = action.get("id")
+                action_id_str = str(action_id) if action_id is not None else None
+                details.append({
+                    "type": str(action["type"]),
+                    "id": action_id_str,
+                    "subtype": _extract_action_subtype(action_id_str) if action_id_str else None,
+                })
+    return details
 
 
 # ---------------------------------------------------------------------------
@@ -271,13 +374,30 @@ def parse_actions(raw_actions: list[dict[str, Any]]) -> list[str]:
 
 def parse_event(raw: dict[str, Any], class_map: dict[int, str]) -> dict[str, Any]:
     """Parse one raw event into a clean nested record (no video_id; set by caller)."""
-    state_raw = raw.get("state") or {}
+    if not isinstance(raw, dict):
+        raw = {}
+
+    state_raw = raw.get("state")
+    if not isinstance(state_raw, dict):
+        state_raw = {}
+
+    ocr_raw = state_raw.get("ocr")
+    if not isinstance(ocr_raw, dict):
+        ocr_raw = {}
+
+    zones_raw = state_raw.get("zones")
+    if not isinstance(zones_raw, dict):
+        zones_raw = {}
+
+    frame_idx = _resolve(raw.get("frame_idx"))
+    action_details = parse_action_details(raw.get("actions"))
     return {
-        "frame_idx": int(raw["frame_idx"]),
+        "frame_idx": frame_idx if frame_idx is not None else 0,
         "page_name": str(raw.get("page_name") or ""),
-        "state":     parse_ocr(state_raw.get("ocr") or {}),
-        "objects":   parse_zones(state_raw.get("zones") or {}, class_map),
-        "actions":   parse_actions(raw.get("actions") or []),
+        "state":     parse_ocr(ocr_raw),
+        "objects":   parse_zones(zones_raw, class_map),
+        "actions":   parse_actions(raw.get("actions")),
+        "action_details": action_details,
     }
 
 
@@ -294,6 +414,9 @@ def split_into_runs(
     A new run starts whenever SPLIT_ACTION ("StartNewRun") appears in
     event["actions"]. The StartNewRun event is included as the first event
     of its run. Events before the first StartNewRun are discarded.
+
+    If no StartNewRun exists but events are present (trimmed datasets),
+    emit one fallback run containing all events.
     """
     runs: list[list[dict[str, Any]]] = []
     current: list[dict[str, Any]] | None = None
@@ -306,6 +429,8 @@ def split_into_runs(
             current.append(event)
     if current:
         runs.append(current)
+    elif events:
+        runs.append(events)
     return runs
 
 
@@ -331,7 +456,13 @@ def find_partitions(src_root: Path) -> list[tuple[str, Path]]:
 def load_events(json_path: Path) -> list[dict[str, Any]]:
     with open(json_path, encoding="utf-8") as fh:
         data = json.load(fh)
-    return data.get("events") or []
+    if isinstance(data, dict):
+        events = data.get("events")
+    elif isinstance(data, list):
+        events = data
+    else:
+        events = []
+    return events if isinstance(events, list) else []
 
 
 def write_run(
@@ -357,7 +488,7 @@ def write_run(
 
 def write_config(dst_root: Path, src_root: Path) -> None:
     config = {
-        "schema_version": "1.1.0",
+        "schema_version": "1.3.0",
         "source_directory": src_root.as_posix(),
         "output_directory": dst_root.as_posix(),
         "partition_format": "video_id={video_id}",
@@ -365,7 +496,9 @@ def write_config(dst_root: Path, src_root: Path) -> None:
         "split_action": SPLIT_ACTION,
         "note": (
             "Events before the first StartNewRun in each video are discarded. "
-            "The StartNewRun event itself is included as the first event of its run."
+            "The StartNewRun event itself is included as the first event of its run. "
+            "Missing OCR keys remain null, omitted zones produce no objects, and duplicate "
+            "objects are preserved."
         ),
         "ocr_fields": {
             "hands_left": {
@@ -420,7 +553,11 @@ def write_config(dst_root: Path, src_root: Path) -> None:
                 "known_values": [
                     "BlindToken", "CurrentConsumables", "CurrentDeck",
                     "CurrentHand", "CurrentHandSelected",
-                    "CurrentJokers", "CurrentStake",
+                    "CurrentHandOrPackOfferings", "CurrentHandOrPackOfferingsSelected",
+                    "CurrentJokers", "CurrentJokersAll", "CurrentPack",
+                    "ShopOfferings", "ShopOfferingsSelected",
+                    "TarotSpectralHand", "TarotSpectralHandSelected",
+                    "CurrentStake", "BlindOffering", "BlindOfferingsNext", "OfferedTag",
                 ],
             },
             "position_in_zone": {
@@ -489,8 +626,18 @@ def write_config(dst_root: Path, src_root: Path) -> None:
         "action_fields": {
             "actions": {
                 "type": "[string]",
-                "source": "event.actions[].type",
+                "source": "event.actions (supports [{'type': ...}], [string], string)",
                 "description": "Action names at this decision point, e.g. PlayHand, DiscardHand, StartNewRun",
+            },
+            "action_details": {
+                "type": "[object]",
+                "source": "event.actions[].{type,id}",
+                "description": "Action metadata preserving type/id and extracted subtype when id matches pred_<subtype>_<frame>_<idx>",
+                "fields": {
+                    "type": "string — canonical action name (e.g. BuyShopItem)",
+                    "id": "null | string — raw detector/predictor action id",
+                    "subtype": "null | string — extracted subtype token (e.g. buyvoucher)",
+                },
             },
         },
     }
