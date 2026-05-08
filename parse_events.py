@@ -46,6 +46,7 @@ from typing import Any
 # ---------------------------------------------------------------------------
 CARD_MIN = 0
 CARD_MAX = 51
+FACEDOWN_CLASS_ID = 231
 EDITION_MIN = 68
 EDITION_MAX = 71
 MODIFIER_MIN = 72
@@ -84,7 +85,16 @@ def _to_int(value: Any) -> int | None:
     return int(s) if s else None
 
 
-def parse_ocr(ocr: dict[str, Any]) -> dict[str, int | None]:
+def _split_pair(value: Any) -> tuple[int | None, int | None]:
+    if value is None:
+        return None, None
+    parts = str(value).split("/")
+    left = _to_int(parts[0]) if len(parts) >= 1 else None
+    right = _to_int(parts[1]) if len(parts) >= 2 else None
+    return left, right
+
+
+def parse_ocr(ocr: dict[str, Any]) -> dict[str, Any]:
     """
     Parse OCR game-state dict into clean typed values.
 
@@ -99,14 +109,17 @@ def parse_ocr(ocr: dict[str, Any]) -> dict[str, int | None]:
     """
     ante_raw = ocr.get("ante")
     ante = _to_int(str(ante_raw).split("/")[0]) if ante_raw is not None else None
+    deck_remaining, deck_total = _split_pair(ocr.get("deck_values"))
+    consumables_current, consumables_total = _split_pair(ocr.get("consumable_values"))
+    jokers_current, jokers_total = _split_pair(ocr.get("joker_values"))
+    hand_size_current, hand_size_total = _split_pair(ocr.get("hand_values"))
 
-    deck_raw = ocr.get("deck_values")
-    if deck_raw is not None:
-        parts = str(deck_raw).split("/")
-        deck_remaining = _to_int(parts[0]) if len(parts) >= 1 else None
-        deck_total = _to_int(parts[1]) if len(parts) >= 2 else None
-    else:
-        deck_remaining = deck_total = None
+    known_ocr_keys = {
+        "hands_left", "discards_left", "dollars", "ante", "round",
+        "deck_values", "round_score", "cash_out", "consumable_values",
+        "joker_values", "hand_values", "reroll_price", "hand_and_level",
+    }
+    ocr_extra = {k: v for k, v in ocr.items() if k not in known_ocr_keys}
 
     return {
         "hands_left":     _to_int(ocr.get("hands_left")),
@@ -117,6 +130,18 @@ def parse_ocr(ocr: dict[str, Any]) -> dict[str, int | None]:
         "deck_remaining": deck_remaining,
         "deck_total":     deck_total,
         "round_score":    _to_int(ocr.get("round_score")),
+        "cash_out":       _to_int(ocr.get("cash_out")),
+        "reroll_price":   _to_int(ocr.get("reroll_price")),
+        "consumables_current": consumables_current,
+        "consumables_total": consumables_total,
+        "jokers_current": jokers_current,
+        "jokers_total": jokers_total,
+        "hand_size_current": hand_size_current,
+        "hand_size_total": hand_size_total,
+        "hand_and_level_raw": (
+            str(ocr.get("hand_and_level")) if ocr.get("hand_and_level") is not None else None
+        ),
+        "ocr_extra": ocr_extra,
     }
 
 
@@ -139,12 +164,24 @@ def _card_fields(class_id: int) -> dict[str, Any]:
     }
 
 
+def _unknown_card_fields() -> dict[str, Any]:
+    return {
+        "rank": None,
+        "rank_index": None,
+        "suit": None,
+        "suit_index": None,
+        "is_ace": None,
+        "is_face": None,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Object type inference
 # ---------------------------------------------------------------------------
 
 def _object_type(class_id: int, class_map: dict[int, str]) -> str:
     if CARD_MIN <= class_id <= CARD_MAX:       return "card"
+    if class_id == FACEDOWN_CLASS_ID:          return "card"
     if 52 <= class_id <= 67:                   return "deck"
     if EDITION_MIN <= class_id <= EDITION_MAX: return "edition"
     if MODIFIER_MIN <= class_id <= MODIFIER_MAX: return "modifier"
@@ -200,9 +237,13 @@ def parse_object(
     children_raw = raw.get("children")
     children: dict[str, Any] = children_raw if isinstance(children_raw, dict) else {}
 
-    card: dict[str, Any] | None = (
-        _card_fields(class_id) if CARD_MIN <= class_id <= CARD_MAX else None
-    )
+    card: dict[str, Any] | None
+    if CARD_MIN <= class_id <= CARD_MAX:
+        card = _card_fields(class_id)
+    elif class_id == FACEDOWN_CLASS_ID:
+        card = _unknown_card_fields()
+    else:
+        card = None
 
     # Edition — cards, jokers, consumables, planets, spectrals, tarots
     edition: str | None = None
@@ -486,7 +527,14 @@ def write_run(
 # Config
 # ---------------------------------------------------------------------------
 
-def write_config(dst_root: Path, src_root: Path) -> None:
+def write_config(
+    dst_root: Path,
+    src_root: Path,
+    observed_zones: set[str] | None = None,
+    observed_ocr_keys: set[str] | None = None,
+) -> None:
+    zones_known = sorted(observed_zones or set())
+    ocr_known = sorted(observed_ocr_keys or set())
     config = {
         "schema_version": "1.3.0",
         "source_directory": src_root.as_posix(),
@@ -500,6 +548,7 @@ def write_config(dst_root: Path, src_root: Path) -> None:
             "Missing OCR keys remain null, omitted zones produce no objects, and duplicate "
             "objects are preserved."
         ),
+        "observed_ocr_keys": ocr_known,
         "ocr_fields": {
             "hands_left": {
                 "type": "int | null",
@@ -541,6 +590,56 @@ def write_config(dst_root: Path, src_root: Path) -> None:
                 "raw_key": "state.ocr.round_score",
                 "transform": "strip non-digits (e.g. '*'), cast int",
             },
+            "cash_out": {
+                "type": "int | null",
+                "raw_key": "state.ocr.cash_out",
+                "transform": "strip non-digits, cast int",
+            },
+            "reroll_price": {
+                "type": "int | null",
+                "raw_key": "state.ocr.reroll_price",
+                "transform": "strip non-digits, cast int",
+            },
+            "consumables_current": {
+                "type": "int | null",
+                "raw_key": "state.ocr.consumable_values",
+                "transform": "split on '/', take numerator, cast int",
+            },
+            "consumables_total": {
+                "type": "int | null",
+                "raw_key": "state.ocr.consumable_values",
+                "transform": "split on '/', take denominator, cast int",
+            },
+            "jokers_current": {
+                "type": "int | null",
+                "raw_key": "state.ocr.joker_values",
+                "transform": "split on '/', take numerator, cast int",
+            },
+            "jokers_total": {
+                "type": "int | null",
+                "raw_key": "state.ocr.joker_values",
+                "transform": "split on '/', take denominator, cast int",
+            },
+            "hand_size_current": {
+                "type": "int | null",
+                "raw_key": "state.ocr.hand_values",
+                "transform": "split on '/', take numerator, cast int",
+            },
+            "hand_size_total": {
+                "type": "int | null",
+                "raw_key": "state.ocr.hand_values",
+                "transform": "split on '/', take denominator, cast int",
+            },
+            "hand_and_level_raw": {
+                "type": "string | null",
+                "raw_key": "state.ocr.hand_and_level",
+                "transform": "string passthrough",
+            },
+            "ocr_extra": {
+                "type": "object",
+                "raw_key": "state.ocr.*",
+                "transform": "pass through unknown OCR keys",
+            },
         },
         "object_fields": {
             "slot_id": {
@@ -550,15 +649,7 @@ def write_config(dst_root: Path, src_root: Path) -> None:
             "zone": {
                 "type": "string",
                 "source": "state.zones key",
-                "known_values": [
-                    "BlindToken", "CurrentConsumables", "CurrentDeck",
-                    "CurrentHand", "CurrentHandSelected",
-                    "CurrentHandOrPackOfferings", "CurrentHandOrPackOfferingsSelected",
-                    "CurrentJokers", "CurrentJokersAll", "CurrentPack",
-                    "ShopOfferings", "ShopOfferingsSelected",
-                    "TarotSpectralHand", "TarotSpectralHandSelected",
-                    "CurrentStake", "BlindOffering", "BlindOfferingsNext", "OfferedTag",
-                ],
+                "known_values": zones_known,
             },
             "position_in_zone": {
                 "type": "int",
@@ -579,7 +670,7 @@ def write_config(dst_root: Path, src_root: Path) -> None:
             },
             "card": {
                 "type": "null | object",
-                "description": "Non-null only when object_type == 'card' (class_id 0-51)",
+                "description": "Non-null for playing cards and facedown cards (class_id 0-51, 231)",
                 "fields": {
                     "rank":       "string — ace, 2-10, jack, queen, king",
                     "rank_index": "int — 0 (ace) to 12 (king)",
@@ -674,9 +765,11 @@ def main(argv: list[str] | None = None) -> None:
     print("loaded class map: %d classes" % len(class_map))
 
     partitions = find_partitions(src_root)
+    observed_zones: set[str] = set()
+    observed_ocr_keys: set[str] = set()
     if not partitions:
         print("no events.json files found under %s" % src_root)
-        write_config(dst_root, src_root)
+        write_config(dst_root, src_root, observed_zones, observed_ocr_keys)
         return
 
     print("found %d partition(s)\n" % len(partitions))
@@ -686,6 +779,19 @@ def main(argv: list[str] | None = None) -> None:
         raw_events = load_events(json_path)
         print("  loaded %d raw events" % len(raw_events))
 
+        for raw in raw_events:
+            if not isinstance(raw, dict):
+                continue
+            state_raw = raw.get("state")
+            if not isinstance(state_raw, dict):
+                continue
+            ocr_raw = state_raw.get("ocr")
+            if isinstance(ocr_raw, dict):
+                observed_ocr_keys.update(str(k) for k in ocr_raw.keys())
+            zones_raw = state_raw.get("zones")
+            if isinstance(zones_raw, dict):
+                observed_zones.update(str(k) for k in zones_raw.keys())
+
         parsed = [parse_event(ev, class_map) for ev in raw_events]
         runs = split_into_runs(parsed)
         print("  %d run(s) found" % len(runs))
@@ -694,7 +800,7 @@ def main(argv: list[str] | None = None) -> None:
         for run_idx, run_events in enumerate(runs):
             write_run(video_id, run_idx, run_events, dst_dir)
 
-    write_config(dst_root, src_root)
+    write_config(dst_root, src_root, observed_zones, observed_ocr_keys)
     print("\ndone.")
 
 

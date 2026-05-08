@@ -118,7 +118,6 @@ if the event is SelectPackItem:
 
 
 (flatten everything. You turn every action into a single index, even SWAP.
-NOOP
 SelectBlind_0
 SelectBlind_1
 ...
@@ -126,6 +125,38 @@ SWAP_0_1
 SWAP_0_2
 ...
 SWAP_10_11)
+
+MORE INFORMATION ABOUT GRANULARIZATION AND TARGET CARDS:
+Each action and "action_subtype" can have a different target object. For example, if the action_subtype is "buyvoucher", it needs to be granularized differently than if the action_subtype is "buyandopenplanetstandardbuffoonpack".
+When an intermediary select card event is created, the target card is different between subtypes.
+Here is the schema for how to define which is the target card:
+	
+DiscardHand - TARGET CARDS FOR INTERMEDIARY SELECT CARD EVENTS = CurrentHandOrPackOfferingsSelected[i]  
+PlayHand - TARGET CARDS FOR INTERMEDIARY SELECT CARD EVENTS = CurrentHandOrPackOfferingsSelected[i] 
+BuyShopItem
+    buyvoucher - VoucherShopOfferingsSelected[0] (generate action map for VoucherShopOffering[i] + VoucherShopOfferingsSelected[0])
+    buyandopenplanetstandardbuffoonpack - PackShopOfferingsSelected[0] (generate action map for PackShopOfferings[i] + PackShopOfferingsSelected[0])
+    buytopshelfjoker - TopShelfShopOfferingsSelected[0] (generate action map for TopShelfShopOfferings[i] + TopShelfShopOfferingsSelected[0])
+    buyandopentarotspectralpack - PackShopOfferingsSelected[0] (generate action map for PackShopOfferings[i] + PackShopOfferingsSelected[0])
+    buytopshelfconsumable - TopShelfShopOfferingsSelected[0] (generate action map for TopShelfShopOfferings[i] + TopShelfShopOfferingsSelected[0])
+SelectPackItem
+    selectpackitemtarot - TARGET CARD FOR FINAL GRANULARIZED EVENT = CurrentHandOrPackOfferingsSelected[0], TARGET CARDS FOR INTERMEDIARY SELECT CARD EVENTS = TarotSpectralHandSelected[i]
+    selectpackitemcard - CurrentHandOrPackOfferingsSelected[0] - generate action map...
+    selectpackitemjoker - CurrentHandOrPackOfferingsSelected[0] - generate action map...
+    selectpackitemplanet - CurrentHandOrPackOfferingsSelected[0]  - generate action map...
+BuyAndUseShopConsumable - TopShelfShopOfferingsSelected[0]  - generate action map... BUT ONLY FOR CONSUMABLES THAT DONT REQUIRE A CARD TO BE SELECTED
+SellItem
+    selljoker - CurrentJokersSelected[0] - generate action map...
+    sellconsumable - CurrentConsumablesSelected[0] - generate action map...
+UseConsumable - CurrentConsumablesSelected[0]
+
+
+SkipPack - does not have a target
+    skipplanetstandardbuffoonpack
+    skiptarotspectralpack
+    skipplanetstandardbuffoonpackblind
+    skiptarotspectralpackblind
+
 
 
 Pages = Blind_Select, In_Blind, Cash_Out, In_Shop, In_TarotSpectral_Pack, In_JokerStandardPlanet_Pack 
@@ -232,6 +263,76 @@ UseConsumable
 	if(CurrentConsumablesSelected.length <= 0)
 			MASK
 	#-- LOGIC HERE --
+tarots and spectrals that need exactly one card selected:
+263	c_talisman
+249	c_aura
+252	c_deja_vu
+264	c_trance
+259	c_medium
+251	c_cryptid
+298	c_chariot
+310	c_lovers
+317	c_tower
+300	c_devil
+
+tarots and spectrals that need up to 2 cards selected:
+302	c_empress
+304	c_hanged_man
+305	c_heirophant
+311	c_magician
+314	c_strength
+
+tarots and spectrals that need up to 3 cards selected:
+312	c_moon
+313	c_star
+315	c_sun
+319	c_world
+
+
+tarots that need exactly 2 cards selected:
+299	c_death
+
+spectrals and tarots that need jokers_current >= 1:
+248	c_ankh
+256	c_hex
+318	c_wheel_of_fortune
+
+
+spectrals and tarots that need jokers_current < jokers_total:
+265	c_wraith
+262	c_soul
+308	c_judgement
+
+
+tarots that need last_tarot_planet != 303
+303	c_fool
+
+
+tarots that need consumables_current < consumables_total:
+307	c_high_priestess
+301	c_emperor
+
+
+TAROTS THAT CAN BE BOUGHT AND USED IN THE SHOP:
+	303	c_fool IF last_tarot_planet != 303
+	THE H
+
+Tarots that dont need anything:
+316	c_temperance
+306	c_hermit
+
+Tarots and spectrals that can be used in shop:
+248	c_ankh
+256	c_hex
+265	c_wraith
+301	c_emperor
+303	c_fool
+306	c_hermit
+307	c_high_priestess
+308	c_judgement
+316	c_temperance
+318	c_wheel_of_fortune
+
 
 
 BuyAndUseShopConsumable(i) - only in in_shop page, generate BuyAndUseShopConsumable(i) for each in ShopOfferings where isConsumable=true
@@ -240,7 +341,7 @@ BuyAndUseShopConsumable(i) - only in in_shop page, generate BuyAndUseShopConsuma
 SelectPackItem(i) - only in in_JokerStandardPlanet_Pack page, generate SelectPackItem(i) for each in CurrentHandOrPackOfferings
 	if Zone CurrentHandOrPackOfferingsSelected[0] is class id between [80 - 229] and ocr jokers_current>=jokers_total
 		MASK
-	LOGIC IS THE SAME AS USE CONSUMABLE, EXCEPT INSTEAD OF CurrentConsumablesSelected we will use CurrentHandOrPackOfferingsSelected. This is confusing because CurrentHandOrPackOfferingsSelected for this event does not contain the " and instead of looking at CurrentHandOrPackOfferingsSelected for selected cards, we are using it for pack offerings. For looking at selected cards, we will use TarotSpectralHandSelected and TarotSpectralHand.
+	-- depricated: LOGIC IS THE SAME AS USE CONSUMABLE, EXCEPT INSTEAD OF CurrentConsumablesSelected we will use CurrentHandOrPackOfferingsSelected. This is confusing because CurrentHandOrPackOfferingsSelected for this event does not contain the " and instead of looking at CurrentHandOrPackOfferingsSelected for selected cards, we are using it for pack offerings. For looking at selected cards, we will use TarotSpectralHandSelected and TarotSpectralHand.
 
 
 SelectCard(i) only in In_Blind or In_TarotSpectral_Pack, generate SelectCard(i) for each in CurrentHand

@@ -34,13 +34,15 @@ from typing import Any
 # Constants
 # ---------------------------------------------------------------------------
 
-OLD_HAND_ZONE = "CurrentHand"
-OLD_HAND_SELECTED_ZONE = "CurrentHandSelected"
-NEW_HAND_ZONE = "CurrentHandOrPackOfferings"
-NEW_HAND_SELECTED_ZONE = "CurrentHandOrPackOfferingsSelected"
+HAND_ZONE = "CurrentHand"
+HAND_SELECTED_ZONE = "CurrentHandSelected"
+LEGACY_HAND_ZONE = "CurrentHandOrPackOfferings"
+LEGACY_HAND_SELECTED_ZONE = "CurrentHandOrPackOfferingsSelected"
+PACK_ZONE = "PackOfferings"
+PACK_SELECTED_ZONE = "PackOfferingsSelected"
 
-HAND_POOL_ZONES = {OLD_HAND_ZONE, NEW_HAND_ZONE}
-HAND_SELECTED_ZONES = {OLD_HAND_SELECTED_ZONE, NEW_HAND_SELECTED_ZONE}
+HAND_POOL_ZONES = {HAND_ZONE, LEGACY_HAND_ZONE}
+HAND_SELECTED_ZONES = {HAND_SELECTED_ZONE, LEGACY_HAND_SELECTED_ZONE}
 
 DECOMPOSE_HAND_ACTIONS = {"PlayHand", "DiscardHand"}
 
@@ -89,6 +91,21 @@ def ordered_zone(zones: dict[str, list[dict[str, Any]]], zone_name: str) -> list
         zones.get(zone_name, []),
         key=lambda o: (int(o.get("position_in_zone", 0)), int(o.get("slot_id", -1))),
     )
+
+
+def first_non_empty(zones: dict[str, list[dict[str, Any]]], zone_names: list[str]) -> list[dict[str, Any]]:
+    for name in zone_names:
+        items = ordered_zone(zones, name)
+        if items:
+            return items
+    return []
+
+
+def concat_zones(zones: dict[str, list[dict[str, Any]]], zone_names: list[str]) -> list[dict[str, Any]]:
+    out: list[dict[str, Any]] = []
+    for name in zone_names:
+        out.extend(ordered_zone(zones, name))
+    return out
 
 
 def strip_zone_fields(obj: dict[str, Any]) -> dict[str, Any]:
@@ -174,41 +191,85 @@ def pick_selected_object_for_action(
     # Preferred selected-zones first, then visible pools.
     if base_action == "UseConsumable":
         return pick_by_index(
-            ordered_zone(zones, "CurrentConsumablesSelected")
-            or ordered_zone(zones, "CurrentConsumables"),
+            first_non_empty(zones, ["CurrentConsumablesSelected", "CurrentConsumables"]),
             idx,
         )
 
     if base_action == "SelectCard":
         return pick_by_index(
-            ordered_zone(zones, NEW_HAND_SELECTED_ZONE)
-            or ordered_zone(zones, OLD_HAND_SELECTED_ZONE)
-            or ordered_zone(zones, "TarotSpectralHandSelected")
-            or ordered_zone(zones, NEW_HAND_ZONE)
-            or ordered_zone(zones, OLD_HAND_ZONE),
+            first_non_empty(
+                zones,
+                [
+                    HAND_SELECTED_ZONE,
+                    LEGACY_HAND_SELECTED_ZONE,
+                    "TarotSpectralHandSelected",
+                    HAND_ZONE,
+                    LEGACY_HAND_ZONE,
+                    "TarotSpectralHand",
+                ],
+            ),
             idx,
         )
 
     if base_action == "SelectPackItem":
         return pick_by_index(
-            ordered_zone(zones, "CurrentPackSelected")
-            or ordered_zone(zones, NEW_HAND_SELECTED_ZONE)
-            or ordered_zone(zones, "CurrentPack")
-            or ordered_zone(zones, NEW_HAND_ZONE),
+            first_non_empty(
+                zones,
+                [
+                    PACK_SELECTED_ZONE,
+                    "CurrentPackSelected",
+                    LEGACY_HAND_SELECTED_ZONE,
+                    PACK_ZONE,
+                    "CurrentPack",
+                    LEGACY_HAND_ZONE,
+                ],
+            ),
             idx,
         )
 
     if base_action == "BuyAndUseShopConsumable":
-        return pick_by_index(
-            ordered_zone(zones, "ShopOfferingsSelected")
-            or ordered_zone(zones, "ShopOfferings"),
-            idx,
+        selected = concat_zones(
+            zones,
+            [
+                "TopShelfShopOfferingsSelected",
+                "ShopOfferingsSelected",
+            ],
         )
+        if selected:
+            return pick_by_index(selected, idx)
+        visible = [
+            obj
+            for obj in concat_zones(
+                zones,
+                ["TopShelfShopOfferings", "ShopOfferings"],
+            )
+            if obj.get("object_type") == "consumable"
+        ]
+        return pick_by_index(visible, idx)
 
     if base_action == "BuyShopItem":
+        selected = concat_zones(
+            zones,
+            [
+                "VoucherShopOfferingsSelected",
+                "PackShopOfferingsSelected",
+                "TopShelfShopOfferingsSelected",
+                "ShopOfferingsSelected",
+            ],
+        )
+        if selected:
+            return pick_by_index(selected, idx)
+        visible = concat_zones(
+            zones,
+            [
+                "VoucherShopOfferings",
+                "PackShopOfferings",
+                "TopShelfShopOfferings",
+                "ShopOfferings",
+            ],
+        )
         return pick_by_index(
-            ordered_zone(zones, "ShopOfferingsSelected")
-            or ordered_zone(zones, "ShopOfferings"),
+            visible,
             idx,
         )
 
@@ -237,8 +298,20 @@ def to_selected_object(obj: dict[str, Any] | None, role: str) -> dict[str, Any] 
 
 def canonical_zones_snapshot(zones: dict[str, list[dict[str, Any]]]) -> dict[str, list[dict[str, Any]]]:
     """Stable schema-facing zone names for downstream tensorization/masking."""
-    current_pool = ordered_zone(zones, NEW_HAND_ZONE) or ordered_zone(zones, OLD_HAND_ZONE)
-    selected_pool = ordered_zone(zones, NEW_HAND_SELECTED_ZONE) or ordered_zone(zones, OLD_HAND_SELECTED_ZONE)
+    current_pool = first_non_empty(zones, [LEGACY_HAND_ZONE, HAND_ZONE, PACK_ZONE, "CurrentPack"])
+    selected_pool = first_non_empty(
+        zones, [LEGACY_HAND_SELECTED_ZONE, HAND_SELECTED_ZONE, PACK_SELECTED_ZONE, "CurrentPackSelected"]
+    )
+    shop_pool = concat_zones(
+        zones,
+        [
+            "VoucherShopOfferings",
+            "PackShopOfferings",
+            "TopShelfShopOfferings",
+            "ShopOfferings",
+        ],
+    )
+    pack_pool = first_non_empty(zones, [PACK_ZONE, "CurrentPack", LEGACY_HAND_ZONE])
 
     return {
         "current_hand_or_pack": copy.deepcopy(current_pool),
@@ -248,8 +321,8 @@ def canonical_zones_snapshot(zones: dict[str, list[dict[str, Any]]]) -> dict[str
             ordered_zone(zones, "CurrentJokersAll") or ordered_zone(zones, "CurrentJokers")
         ),
         "current_consumables": copy.deepcopy(ordered_zone(zones, "CurrentConsumables")),
-        "shop_offerings": copy.deepcopy(ordered_zone(zones, "ShopOfferings")),
-        "current_pack": copy.deepcopy(ordered_zone(zones, "CurrentPack")),
+        "shop_offerings": copy.deepcopy(shop_pool),
+        "current_pack": copy.deepcopy(pack_pool),
         "blind_offerings": copy.deepcopy(ordered_zone(zones, "BlindOffering")),
         "blind_offerings_next": copy.deepcopy(ordered_zone(zones, "BlindOfferingsNext")),
         "offered_tag": copy.deepcopy(ordered_zone(zones, "OfferedTag")),
@@ -310,14 +383,14 @@ def make_step(
 def get_hand_and_selected_zones(
     zones: dict[str, list[dict[str, Any]]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str]:
-    selected = ordered_zone(zones, NEW_HAND_SELECTED_ZONE)
+    selected = ordered_zone(zones, HAND_SELECTED_ZONE)
     if selected:
-        base_pool = ordered_zone(zones, NEW_HAND_ZONE)
-        return base_pool, selected, NEW_HAND_ZONE
+        base_pool = ordered_zone(zones, HAND_ZONE)
+        return base_pool, selected, HAND_ZONE
 
-    selected = ordered_zone(zones, OLD_HAND_SELECTED_ZONE)
-    base_pool = ordered_zone(zones, OLD_HAND_ZONE)
-    return base_pool, selected, OLD_HAND_ZONE
+    selected = ordered_zone(zones, LEGACY_HAND_SELECTED_ZONE)
+    base_pool = ordered_zone(zones, LEGACY_HAND_ZONE)
+    return base_pool, selected, LEGACY_HAND_ZONE
 
 
 def extract_context_without_hand(event_objects: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -461,6 +534,7 @@ def parent_class_id_for(obj: dict[str, Any] | None) -> int | None:
 def selected_cards_for_consumable_or_pack(
     event: dict[str, Any],
     base_action: str,
+    base_action_subtype: str | None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str] | None:
     zones = group_by_zone(event["objects"])
 
@@ -471,13 +545,15 @@ def selected_cards_for_consumable_or_pack(
             return pool, selected, "TarotSpectralHand"
 
         if event.get("page_name") == "In_Blind":
-            selected = ordered_zone(zones, NEW_HAND_SELECTED_ZONE) or ordered_zone(zones, OLD_HAND_SELECTED_ZONE)
-            pool = ordered_zone(zones, NEW_HAND_ZONE) or ordered_zone(zones, OLD_HAND_ZONE)
-            return pool, selected, NEW_HAND_ZONE
+            selected = first_non_empty(zones, [HAND_SELECTED_ZONE, LEGACY_HAND_SELECTED_ZONE])
+            pool = first_non_empty(zones, [HAND_ZONE, LEGACY_HAND_ZONE])
+            return pool, selected, HAND_ZONE
 
         return None
 
     if base_action == "SelectPackItem":
+        if base_action_subtype not in {None, "selectpackitemtarot"}:
+            return None
         selected = ordered_zone(zones, "TarotSpectralHandSelected")
         pool = ordered_zone(zones, "TarotSpectralHand")
         return pool, selected, "TarotSpectralHand"
@@ -517,7 +593,7 @@ def decompose_conditional_selection_action(
             )
         ]
 
-    pools = selected_cards_for_consumable_or_pack(event, base_action)
+    pools = selected_cards_for_consumable_or_pack(event, base_action, base_action_subtype)
     if not pools:
         role = classify_selected_role(base_action)
         return [
@@ -608,10 +684,12 @@ def joker_slot_order(event: dict[str, Any]) -> list[int]:
     zones = group_by_zone(event.get("objects", []))
     jokers = ordered_zone(zones, "CurrentJokersAll") or ordered_zone(zones, "CurrentJokers")
     out: list[int] = []
+    seen: set[int] = set()
     for obj in jokers:
         slot_id = obj.get("slot_id")
-        if isinstance(slot_id, int):
+        if isinstance(slot_id, int) and slot_id not in seen:
             out.append(slot_id)
+            seen.add(slot_id)
     return out
 
 
