@@ -1,71 +1,35 @@
 {
-  "schema_version": "2.1.0",
+  "schema_version": "3.0.0",
   "source_directory": "data/parsed",
   "output_directory": "data/granularized",
   "partition_format": "video_id={video_id}",
   "file_name": "run_{index:03d}.json",
-  "decompose_actions_always": [
-    "DiscardHand",
-    "PlayHand",
-    "SWAP"
-  ],
-  "decompose_actions_conditional": [
-    "UseConsumable",
-    "SelectPackItem",
-    "BuyAndUseShopConsumable"
-  ],
-  "single_selected_object_actions": [
-    "BuyAndUseShopConsumable",
-    "BuyShopItem",
-    "SelectCard",
-    "SelectPackItem",
-    "SellItem",
-    "UseConsumable"
-  ],
-  "note": "Every output event is one granular step with one action. PlayHand/DiscardHand are decomposed into SelectCard micro-steps plus commit; UseConsumable/SelectPackItem/BuyAndUseShopConsumable are conditionally decomposed based on target class_id; SWAP_i_j steps are synthesized from joker-order changes between boundary events.",
+  "zone_normalization": {
+    "FooAll": "Foo",
+    "FooSelected": "<discarded>",
+    "bare_paired_with_All_or_Selected": "collapsed_into_Foo"
+  },
+  "action_label_format": "Bare base for no-target families (e.g. PlayHand). Per-zone indexed `Base_Zone_i` for indexed families. Pair-indexed `SWAP_i_j` for joker swaps.",
   "step_fields": {
-    "step_id": "int — monotonic index within run",
-    "frame_idx": "int — source frame number",
-    "page_name": "str — game UI page",
-    "action": "str — flattened action label (e.g. PlayHand, BuyShopItem_2, SWAP_1_3)",
-    "action_subtype": "null | string — parsed subtype from action_details (e.g. buyvoucher)",
-    "source_action": "str — macro action before decomposition",
-    "source_action_subtype": "null | string — subtype of source_action",
-    "source_event_index": "int — index in parsed run.events",
-    "micro_index": "int — index within decomposed source event (negative for pre-action synthesized swaps)",
-    "source_kind": "str — pass_through | select | commit | swap_synth",
-    "selected_object": "null | {role, slot_id, object} | {role='joker_slot_pair', pair=[i,j], object={left_index,right_index}}",
-    "state": "object — parsed OCR state",
-    "objects": "[object] — context objects snapshot",
-    "zones": "object — canonical zone snapshots for downstream masking/tensorization",
-    "selected_cards": "optional [object] — already selected cards in sequence",
-    "current_hand_or_pack": "optional [object] — dynamic pool during selection micro-steps",
-    "current_hand": "optional [object] — compatibility alias of current_hand_or_pack"
+    "step_id": "int",
+    "frame_idx": "int",
+    "page_name": "str",
+    "source_event_index": "int",
+    "micro_index": "int (negative for pre-event swap_synth)",
+    "source_kind": "pass_through | select | commit | swap_synth",
+    "source_action": "str",
+    "source_action_subtype": "str | null",
+    "action": "str",
+    "action_subtype": "str | null",
+    "target_zone": "str | null",
+    "target_position": "int | null",
+    "swap_pair": "[int, int] | null",
+    "selected_object": "{object: <copy>} | null",
+    "pending_cards": "[object, ...]",
+    "state": "OCR dict",
+    "objects": "[object, ...] - normalized zones; includes PendingCards"
   },
-  "zones": {
-    "current_hand_or_pack": "[object]",
-    "selected_cards": "[object]",
-    "current_jokers": "[object]",
-    "current_jokers_all": "[object]",
-    "current_consumables": "[object]",
-    "shop_offerings": "[object]",
-    "current_pack": "[object]",
-    "blind_offerings": "[object]",
-    "blind_offerings_next": "[object]",
-    "offered_tag": "[object]",
-    "tarot_spectral_hand": "[object]",
-    "tarot_spectral_hand_selected": "[object]"
-  },
-  "selected_object_roles": [
-    "hand_card",
-    "pack_item",
-    "consumable",
-    "shop_item",
-    "inventory_item",
-    "joker_slot_pair",
-    "none"
-  ],
-  "requires_card_selection_class_ids": [
+  "requires_at_least_one_card_class_ids": [
     249,
     251,
     252,
@@ -88,15 +52,72 @@
     317,
     319
   ],
-  "card_object_fields": {
-    "slot_id": "int",
-    "class_id": "int — 0-399; see data/class_map.csv",
-    "object_type": "str — card | deck | joker | consumable | …",
-    "card": "null | {rank, rank_index, suit, suit_index, is_ace, is_face}",
-    "edition": "null | str — e_foil | e_holo | e_negative | e_polychrome",
-    "modifier": "null | str — m_bonus | m_glass | m_gold | m_lucky | m_mult | m_steel | m_stone | m_wild",
-    "seal": "null | str — blue_seal | gold_seal | purple_seal | red_seal",
-    "stickers": "[str] — rental | perishable | eternal",
-    "is_debuffed": "bool"
+  "swap_trigger_bases": [
+    "BuyAndUseShopConsumable",
+    "BuyShopItem",
+    "CashOut",
+    "DiscardHand",
+    "LeaveShop",
+    "PlayHand",
+    "SelectPackItem",
+    "SellItem",
+    "UseConsumable"
+  ],
+  "swap_snapshot_exclusions": [
+    "RerollBossBlind",
+    "RerollShop",
+    "SelectCard",
+    "SkipBlind",
+    "SkipPack",
+    "StartNewRun"
+  ],
+  "target_zone_table": {
+    "BuyShopItem": {
+      "buyvoucher": "VoucherShopOfferings",
+      "buyandopenplanetstandardbuffoonpack": "PackShopOfferings",
+      "buyandopentarotspectralpack": "PackShopOfferings",
+      "buytopshelfjoker": "TopShelfShopOfferings",
+      "buytopshelfconsumable": "TopShelfShopOfferings"
+    },
+    "SelectPackItem": {
+      "selectpackitemtarot": "PackOfferings",
+      "selectpackitemcard": "PackOfferings",
+      "selectpackitemjoker": "PackOfferings",
+      "selectpackitemplanet": "PackOfferings",
+      "*": "PackOfferings"
+    },
+    "SellItem": {
+      "selljoker": "CurrentJokers",
+      "sellconsumable": "CurrentConsumables"
+    },
+    "BuyAndUseShopConsumable": {
+      "*": "TopShelfShopOfferings"
+    },
+    "UseConsumable": {
+      "*": "CurrentConsumables"
+    }
+  },
+  "stats": {
+    "source_kind.pass_through": 258391,
+    "base.StartNewRun": 1973,
+    "base.SelectBlind": 21364,
+    "source_kind.select": 355621,
+    "base.SelectCard": 355621,
+    "source_kind.commit": 108478,
+    "base.DiscardHand": 35042,
+    "base.PlayHand": 48692,
+    "base.CashOut": 21942,
+    "base.BuyShopItem": 51240,
+    "base.SelectPackItem": 23320,
+    "base.SellItem": 20755,
+    "base.LeaveShop": 20353,
+    "base.UseConsumable": 27698,
+    "base.SkipPack": 7938,
+    "base.RerollShop": 70635,
+    "base.BuyAndUseShopConsumable": 11793,
+    "source_kind.swap_synth": 8667,
+    "base.SWAP": 8667,
+    "base.SkipBlind": 2522,
+    "base.RerollBossBlind": 1602
   }
 }

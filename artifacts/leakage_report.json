@@ -1,0 +1,63 @@
+{
+  "splits": {
+    "train_videos": 74,
+    "val_videos": 25,
+    "test_videos": 24,
+    "overlap_train_val": [],
+    "overlap_train_test": [],
+    "overlap_val_test": [],
+    "ok": true
+  },
+  "observation_duplicate_rate": {
+    "train_steps": 36678,
+    "train_unique": 23112,
+    "val_steps": 7872,
+    "val_unique": 5376,
+    "val_overlap_with_train": 117,
+    "val_overlap_rate": 0.01486280487804878,
+    "test_steps": 7857,
+    "test_unique": 5262,
+    "test_overlap_with_train": 114,
+    "test_overlap_rate": 0.014509354715540282
+  },
+  "family_leakage_from_single_feature": [
+    {
+      "feature": "action_subtype_id",
+      "vocab_name": "action_subtype",
+      "n_distinct_values": 26,
+      "train": {
+        "n": 36673,
+        "top1_family": 0.9875112480571537
+      },
+      "val": {
+        "n": 7872,
+        "top1_family": 0.9771341463414634
+      },
+      "test": {
+        "n": 7857,
+        "top1_family": 0.9859997454499173
+      },
+      "mean_value_purity": 0.9990281167108753,
+      "median_value_purity": 1.0
+    },
+    {
+      "feature": "source_kind_id",
+      "vocab_name": "source_kind",
+      "n_distinct_values": 4,
+      "train": {
+        "n": 36673,
+        "top1_family": 0.6541870040629346
+      },
+      "val": {
+        "n": 7872,
+        "top1_family": 0.6639989837398373
+      },
+      "test": {
+        "n": 7857,
+        "top1_family": 0.6524118620338551
+      },
+      "mean_value_purity": 0.680779304148388,
+      "median_value_purity": 0.7300399201596807
+    }
+  ]
+}

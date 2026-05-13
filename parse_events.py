@@ -2,7 +2,7 @@
 """
 parse_events.py
 ===============
-Reads  data/extracted/video_id=*/events.json
+Reads  data/extracted/video_id=*/*.json
 Writes data/parsed/video_id=*/run_000.json, run_001.json, …
        data/parsed/config.json
 
@@ -114,13 +114,6 @@ def parse_ocr(ocr: dict[str, Any]) -> dict[str, Any]:
     jokers_current, jokers_total = _split_pair(ocr.get("joker_values"))
     hand_size_current, hand_size_total = _split_pair(ocr.get("hand_values"))
 
-    known_ocr_keys = {
-        "hands_left", "discards_left", "dollars", "ante", "round",
-        "deck_values", "round_score", "cash_out", "consumable_values",
-        "joker_values", "hand_values", "reroll_price", "hand_and_level",
-    }
-    ocr_extra = {k: v for k, v in ocr.items() if k not in known_ocr_keys}
-
     return {
         "hands_left":     _to_int(ocr.get("hands_left")),
         "discards_left":  _to_int(ocr.get("discards_left")),
@@ -138,10 +131,6 @@ def parse_ocr(ocr: dict[str, Any]) -> dict[str, Any]:
         "jokers_total": jokers_total,
         "hand_size_current": hand_size_current,
         "hand_size_total": hand_size_total,
-        "hand_and_level_raw": (
-            str(ocr.get("hand_and_level")) if ocr.get("hand_and_level") is not None else None
-        ),
-        "ocr_extra": ocr_extra,
     }
 
 
@@ -480,17 +469,30 @@ def split_into_runs(
 # ---------------------------------------------------------------------------
 
 def find_partitions(src_root: Path) -> list[tuple[str, Path]]:
-    """Return [(video_id, json_path)] for every valid partition folder."""
+    """
+    Return [(video_id, json_path)] for every valid partition folder.
+
+    Supports both legacy `events.json` and newer per-video filenames
+    like `<video_id>_enriched.json`.
+    """
     results: list[tuple[str, Path]] = []
     if not src_root.exists():
         return results
     for entry in sorted(src_root.iterdir()):
         if not entry.is_dir() or not entry.name.startswith("video_id="):
             continue
-        json_path = entry / "events.json"
-        if json_path.exists():
-            video_id = entry.name.split("=", 1)[1]
-            results.append((video_id, json_path))
+
+        json_files = sorted(p for p in entry.glob("*.json") if p.is_file())
+        if not json_files:
+            continue
+
+        # Prefer the legacy canonical filename when present, otherwise pick
+        # the first JSON file deterministically.
+        preferred = entry / "events.json"
+        json_path = preferred if preferred.exists() else json_files[0]
+
+        video_id = entry.name.split("=", 1)[1]
+        results.append((video_id, json_path))
     return results
 
 
@@ -630,16 +632,6 @@ def write_config(
                 "raw_key": "state.ocr.hand_values",
                 "transform": "split on '/', take denominator, cast int",
             },
-            "hand_and_level_raw": {
-                "type": "string | null",
-                "raw_key": "state.ocr.hand_and_level",
-                "transform": "string passthrough",
-            },
-            "ocr_extra": {
-                "type": "object",
-                "raw_key": "state.ocr.*",
-                "transform": "pass through unknown OCR keys",
-            },
         },
         "object_fields": {
             "slot_id": {
@@ -744,7 +736,7 @@ def write_config(
 # ---------------------------------------------------------------------------
 
 def main(argv: list[str] | None = None) -> None:
-    ap = argparse.ArgumentParser(description="Parse Balatro extracted events.json files into per-run JSONs.")
+    ap = argparse.ArgumentParser(description="Parse Balatro extracted event JSON files into per-run JSONs.")
     ap.add_argument("--src", type=Path, default=Path("data/extracted"),
                     help="Root of extracted partitions (default: data/extracted)")
     ap.add_argument("--dst", type=Path, default=Path("data/parsed"),
@@ -768,14 +760,14 @@ def main(argv: list[str] | None = None) -> None:
     observed_zones: set[str] = set()
     observed_ocr_keys: set[str] = set()
     if not partitions:
-        print("no events.json files found under %s" % src_root)
+        print("no extracted JSON files found under %s" % src_root)
         write_config(dst_root, src_root, observed_zones, observed_ocr_keys)
         return
 
     print("found %d partition(s)\n" % len(partitions))
 
     for video_id, json_path in partitions:
-        print("video_id=%s" % video_id)
+        print("video_id=%s (source=%s)" % (video_id, json_path.name))
         raw_events = load_events(json_path)
         print("  loaded %d raw events" % len(raw_events))
 

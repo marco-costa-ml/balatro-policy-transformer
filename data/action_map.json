@@ -1,0 +1,636 @@
+{
+  "schema_version": "2.0.0",
+  "action_map_version": "v2.aefe9cf43e5a",
+  "generated_at_utc": "2026-05-12T20:26:46.425105+00:00",
+  "max_values": {
+    "MAX_JOKER_SLOTS": 10
+  },
+  "max_values_per_zone": {
+    "BuyAndUseShopConsumable_TopShelfShopOfferings": 4,
+    "BuyShopItem_PackShopOfferings": 2,
+    "BuyShopItem_TopShelfShopOfferings": 15,
+    "BuyShopItem_VoucherShopOfferings": 4,
+    "SelectCard_CurrentHand": 15,
+    "SelectCard_TarotSpectralHand": 15,
+    "SelectPackItem_PackOfferings": 6,
+    "SellItem_CurrentConsumables": 4,
+    "SellItem_CurrentJokers": 10,
+    "UseConsumable_CurrentConsumables": 4
+  },
+  "fixed_actions": [
+    "StartNewRun",
+    "SelectBlind",
+    "SkipBlind",
+    "RerollBossBlind",
+    "DiscardHand",
+    "PlayHand",
+    "CashOut",
+    "LeaveShop",
+    "SkipPack",
+    "RerollShop"
+  ],
+  "indexed_families": [
+    {
+      "base": "UseConsumable",
+      "zone": "CurrentConsumables",
+      "subfamily_key": "UseConsumable_CurrentConsumables",
+      "offset": 10,
+      "size": 4
+    },
+    {
+      "base": "SelectCard",
+      "zone": "CurrentHand",
+      "subfamily_key": "SelectCard_CurrentHand",
+      "offset": 14,
+      "size": 15
+    },
+    {
+      "base": "SelectCard",
+      "zone": "TarotSpectralHand",
+      "subfamily_key": "SelectCard_TarotSpectralHand",
+      "offset": 29,
+      "size": 15
+    },
+    {
+      "base": "SelectPackItem",
+      "zone": "PackOfferings",
+      "subfamily_key": "SelectPackItem_PackOfferings",
+      "offset": 44,
+      "size": 6
+    },
+    {
+      "base": "BuyAndUseShopConsumable",
+      "zone": "TopShelfShopOfferings",
+      "subfamily_key": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+      "offset": 50,
+      "size": 4
+    },
+    {
+      "base": "BuyShopItem",
+      "zone": "VoucherShopOfferings",
+      "subfamily_key": "BuyShopItem_VoucherShopOfferings",
+      "offset": 54,
+      "size": 4
+    },
+    {
+      "base": "BuyShopItem",
+      "zone": "PackShopOfferings",
+      "subfamily_key": "BuyShopItem_PackShopOfferings",
+      "offset": 58,
+      "size": 2
+    },
+    {
+      "base": "BuyShopItem",
+      "zone": "TopShelfShopOfferings",
+      "subfamily_key": "BuyShopItem_TopShelfShopOfferings",
+      "offset": 60,
+      "size": 15
+    },
+    {
+      "base": "SellItem",
+      "zone": "CurrentJokers",
+      "subfamily_key": "SellItem_CurrentJokers",
+      "offset": 75,
+      "size": 10
+    },
+    {
+      "base": "SellItem",
+      "zone": "CurrentConsumables",
+      "subfamily_key": "SellItem_CurrentConsumables",
+      "offset": 85,
+      "size": 4
+    }
+  ],
+  "swap_family": {
+    "base": "SWAP",
+    "max_key": "MAX_JOKER_SLOTS",
+    "size": 45,
+    "pairs": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        0,
+        3
+      ],
+      [
+        0,
+        4
+      ],
+      [
+        0,
+        5
+      ],
+      [
+        0,
+        6
+      ],
+      [
+        0,
+        7
+      ],
+      [
+        0,
+        8
+      ],
+      [
+        0,
+        9
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        1,
+        5
+      ],
+      [
+        1,
+        6
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        1,
+        9
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        2,
+        6
+      ],
+      [
+        2,
+        7
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        2,
+        9
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        3,
+        7
+      ],
+      [
+        3,
+        8
+      ],
+      [
+        3,
+        9
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        4,
+        6
+      ],
+      [
+        4,
+        7
+      ],
+      [
+        4,
+        8
+      ],
+      [
+        4,
+        9
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        5,
+        7
+      ],
+      [
+        5,
+        8
+      ],
+      [
+        5,
+        9
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        6,
+        8
+      ],
+      [
+        6,
+        9
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        7,
+        9
+      ],
+      [
+        8,
+        9
+      ]
+    ]
+  },
+  "n_actions": 134,
+  "family_offsets": {
+    "StartNewRun": 0,
+    "SelectBlind": 1,
+    "SkipBlind": 2,
+    "RerollBossBlind": 3,
+    "DiscardHand": 4,
+    "PlayHand": 5,
+    "CashOut": 6,
+    "LeaveShop": 7,
+    "SkipPack": 8,
+    "RerollShop": 9,
+    "UseConsumable_CurrentConsumables": 10,
+    "SelectCard_CurrentHand": 14,
+    "SelectCard_TarotSpectralHand": 29,
+    "SelectPackItem_PackOfferings": 44,
+    "BuyAndUseShopConsumable_TopShelfShopOfferings": 50,
+    "BuyShopItem_VoucherShopOfferings": 54,
+    "BuyShopItem_PackShopOfferings": 58,
+    "BuyShopItem_TopShelfShopOfferings": 60,
+    "SellItem_CurrentJokers": 75,
+    "SellItem_CurrentConsumables": 85,
+    "SWAP": 89
+  },
+  "family_sizes": {
+    "StartNewRun": 1,
+    "SelectBlind": 1,
+    "SkipBlind": 1,
+    "RerollBossBlind": 1,
+    "DiscardHand": 1,
+    "PlayHand": 1,
+    "CashOut": 1,
+    "LeaveShop": 1,
+    "SkipPack": 1,
+    "RerollShop": 1,
+    "UseConsumable_CurrentConsumables": 4,
+    "SelectCard_CurrentHand": 15,
+    "SelectCard_TarotSpectralHand": 15,
+    "SelectPackItem_PackOfferings": 6,
+    "BuyAndUseShopConsumable_TopShelfShopOfferings": 4,
+    "BuyShopItem_VoucherShopOfferings": 4,
+    "BuyShopItem_PackShopOfferings": 2,
+    "BuyShopItem_TopShelfShopOfferings": 15,
+    "SellItem_CurrentJokers": 10,
+    "SellItem_CurrentConsumables": 4,
+    "SWAP": 45
+  },
+  "base_family_offsets": {
+    "UseConsumable": [
+      10,
+      14
+    ],
+    "SelectCard": [
+      14,
+      44
+    ],
+    "SelectPackItem": [
+      44,
+      50
+    ],
+    "BuyAndUseShopConsumable": [
+      50,
+      54
+    ],
+    "BuyShopItem": [
+      54,
+      75
+    ],
+    "SellItem": [
+      75,
+      89
+    ]
+  },
+  "index_to_label": [
+    "StartNewRun",
+    "SelectBlind",
+    "SkipBlind",
+    "RerollBossBlind",
+    "DiscardHand",
+    "PlayHand",
+    "CashOut",
+    "LeaveShop",
+    "SkipPack",
+    "RerollShop",
+    "UseConsumable_CurrentConsumables_0",
+    "UseConsumable_CurrentConsumables_1",
+    "UseConsumable_CurrentConsumables_2",
+    "UseConsumable_CurrentConsumables_3",
+    "SelectCard_CurrentHand_0",
+    "SelectCard_CurrentHand_1",
+    "SelectCard_CurrentHand_2",
+    "SelectCard_CurrentHand_3",
+    "SelectCard_CurrentHand_4",
+    "SelectCard_CurrentHand_5",
+    "SelectCard_CurrentHand_6",
+    "SelectCard_CurrentHand_7",
+    "SelectCard_CurrentHand_8",
+    "SelectCard_CurrentHand_9",
+    "SelectCard_CurrentHand_10",
+    "SelectCard_CurrentHand_11",
+    "SelectCard_CurrentHand_12",
+    "SelectCard_CurrentHand_13",
+    "SelectCard_CurrentHand_14",
+    "SelectCard_TarotSpectralHand_0",
+    "SelectCard_TarotSpectralHand_1",
+    "SelectCard_TarotSpectralHand_2",
+    "SelectCard_TarotSpectralHand_3",
+    "SelectCard_TarotSpectralHand_4",
+    "SelectCard_TarotSpectralHand_5",
+    "SelectCard_TarotSpectralHand_6",
+    "SelectCard_TarotSpectralHand_7",
+    "SelectCard_TarotSpectralHand_8",
+    "SelectCard_TarotSpectralHand_9",
+    "SelectCard_TarotSpectralHand_10",
+    "SelectCard_TarotSpectralHand_11",
+    "SelectCard_TarotSpectralHand_12",
+    "SelectCard_TarotSpectralHand_13",
+    "SelectCard_TarotSpectralHand_14",
+    "SelectPackItem_PackOfferings_0",
+    "SelectPackItem_PackOfferings_1",
+    "SelectPackItem_PackOfferings_2",
+    "SelectPackItem_PackOfferings_3",
+    "SelectPackItem_PackOfferings_4",
+    "SelectPackItem_PackOfferings_5",
+    "BuyAndUseShopConsumable_TopShelfShopOfferings_0",
+    "BuyAndUseShopConsumable_TopShelfShopOfferings_1",
+    "BuyAndUseShopConsumable_TopShelfShopOfferings_2",
+    "BuyAndUseShopConsumable_TopShelfShopOfferings_3",
+    "BuyShopItem_VoucherShopOfferings_0",
+    "BuyShopItem_VoucherShopOfferings_1",
+    "BuyShopItem_VoucherShopOfferings_2",
+    "BuyShopItem_VoucherShopOfferings_3",
+    "BuyShopItem_PackShopOfferings_0",
+    "BuyShopItem_PackShopOfferings_1",
+    "BuyShopItem_TopShelfShopOfferings_0",
+    "BuyShopItem_TopShelfShopOfferings_1",
+    "BuyShopItem_TopShelfShopOfferings_2",
+    "BuyShopItem_TopShelfShopOfferings_3",
+    "BuyShopItem_TopShelfShopOfferings_4",
+    "BuyShopItem_TopShelfShopOfferings_5",
+    "BuyShopItem_TopShelfShopOfferings_6",
+    "BuyShopItem_TopShelfShopOfferings_7",
+    "BuyShopItem_TopShelfShopOfferings_8",
+    "BuyShopItem_TopShelfShopOfferings_9",
+    "BuyShopItem_TopShelfShopOfferings_10",
+    "BuyShopItem_TopShelfShopOfferings_11",
+    "BuyShopItem_TopShelfShopOfferings_12",
+    "BuyShopItem_TopShelfShopOfferings_13",
+    "BuyShopItem_TopShelfShopOfferings_14",
+    "SellItem_CurrentJokers_0",
+    "SellItem_CurrentJokers_1",
+    "SellItem_CurrentJokers_2",
+    "SellItem_CurrentJokers_3",
+    "SellItem_CurrentJokers_4",
+    "SellItem_CurrentJokers_5",
+    "SellItem_CurrentJokers_6",
+    "SellItem_CurrentJokers_7",
+    "SellItem_CurrentJokers_8",
+    "SellItem_CurrentJokers_9",
+    "SellItem_CurrentConsumables_0",
+    "SellItem_CurrentConsumables_1",
+    "SellItem_CurrentConsumables_2",
+    "SellItem_CurrentConsumables_3",
+    "SWAP_0_1",
+    "SWAP_0_2",
+    "SWAP_0_3",
+    "SWAP_0_4",
+    "SWAP_0_5",
+    "SWAP_0_6",
+    "SWAP_0_7",
+    "SWAP_0_8",
+    "SWAP_0_9",
+    "SWAP_1_2",
+    "SWAP_1_3",
+    "SWAP_1_4",
+    "SWAP_1_5",
+    "SWAP_1_6",
+    "SWAP_1_7",
+    "SWAP_1_8",
+    "SWAP_1_9",
+    "SWAP_2_3",
+    "SWAP_2_4",
+    "SWAP_2_5",
+    "SWAP_2_6",
+    "SWAP_2_7",
+    "SWAP_2_8",
+    "SWAP_2_9",
+    "SWAP_3_4",
+    "SWAP_3_5",
+    "SWAP_3_6",
+    "SWAP_3_7",
+    "SWAP_3_8",
+    "SWAP_3_9",
+    "SWAP_4_5",
+    "SWAP_4_6",
+    "SWAP_4_7",
+    "SWAP_4_8",
+    "SWAP_4_9",
+    "SWAP_5_6",
+    "SWAP_5_7",
+    "SWAP_5_8",
+    "SWAP_5_9",
+    "SWAP_6_7",
+    "SWAP_6_8",
+    "SWAP_6_9",
+    "SWAP_7_8",
+    "SWAP_7_9",
+    "SWAP_8_9"
+  ],
+  "label_to_index": {
+    "StartNewRun": 0,
+    "SelectBlind": 1,
+    "SkipBlind": 2,
+    "RerollBossBlind": 3,
+    "DiscardHand": 4,
+    "PlayHand": 5,
+    "CashOut": 6,
+    "LeaveShop": 7,
+    "SkipPack": 8,
+    "RerollShop": 9,
+    "UseConsumable_CurrentConsumables_0": 10,
+    "UseConsumable_CurrentConsumables_1": 11,
+    "UseConsumable_CurrentConsumables_2": 12,
+    "UseConsumable_CurrentConsumables_3": 13,
+    "SelectCard_CurrentHand_0": 14,
+    "SelectCard_CurrentHand_1": 15,
+    "SelectCard_CurrentHand_2": 16,
+    "SelectCard_CurrentHand_3": 17,
+    "SelectCard_CurrentHand_4": 18,
+    "SelectCard_CurrentHand_5": 19,
+    "SelectCard_CurrentHand_6": 20,
+    "SelectCard_CurrentHand_7": 21,
+    "SelectCard_CurrentHand_8": 22,
+    "SelectCard_CurrentHand_9": 23,
+    "SelectCard_CurrentHand_10": 24,
+    "SelectCard_CurrentHand_11": 25,
+    "SelectCard_CurrentHand_12": 26,
+    "SelectCard_CurrentHand_13": 27,
+    "SelectCard_CurrentHand_14": 28,
+    "SelectCard_TarotSpectralHand_0": 29,
+    "SelectCard_TarotSpectralHand_1": 30,
+    "SelectCard_TarotSpectralHand_2": 31,
+    "SelectCard_TarotSpectralHand_3": 32,
+    "SelectCard_TarotSpectralHand_4": 33,
+    "SelectCard_TarotSpectralHand_5": 34,
+    "SelectCard_TarotSpectralHand_6": 35,
+    "SelectCard_TarotSpectralHand_7": 36,
+    "SelectCard_TarotSpectralHand_8": 37,
+    "SelectCard_TarotSpectralHand_9": 38,
+    "SelectCard_TarotSpectralHand_10": 39,
+    "SelectCard_TarotSpectralHand_11": 40,
+    "SelectCard_TarotSpectralHand_12": 41,
+    "SelectCard_TarotSpectralHand_13": 42,
+    "SelectCard_TarotSpectralHand_14": 43,
+    "SelectPackItem_PackOfferings_0": 44,
+    "SelectPackItem_PackOfferings_1": 45,
+    "SelectPackItem_PackOfferings_2": 46,
+    "SelectPackItem_PackOfferings_3": 47,
+    "SelectPackItem_PackOfferings_4": 48,
+    "SelectPackItem_PackOfferings_5": 49,
+    "BuyAndUseShopConsumable_TopShelfShopOfferings_0": 50,
+    "BuyAndUseShopConsumable_TopShelfShopOfferings_1": 51,
+    "BuyAndUseShopConsumable_TopShelfShopOfferings_2": 52,
+    "BuyAndUseShopConsumable_TopShelfShopOfferings_3": 53,
+    "BuyShopItem_VoucherShopOfferings_0": 54,
+    "BuyShopItem_VoucherShopOfferings_1": 55,
+    "BuyShopItem_VoucherShopOfferings_2": 56,
+    "BuyShopItem_VoucherShopOfferings_3": 57,
+    "BuyShopItem_PackShopOfferings_0": 58,
+    "BuyShopItem_PackShopOfferings_1": 59,
+    "BuyShopItem_TopShelfShopOfferings_0": 60,
+    "BuyShopItem_TopShelfShopOfferings_1": 61,
+    "BuyShopItem_TopShelfShopOfferings_2": 62,
+    "BuyShopItem_TopShelfShopOfferings_3": 63,
+    "BuyShopItem_TopShelfShopOfferings_4": 64,
+    "BuyShopItem_TopShelfShopOfferings_5": 65,
+    "BuyShopItem_TopShelfShopOfferings_6": 66,
+    "BuyShopItem_TopShelfShopOfferings_7": 67,
+    "BuyShopItem_TopShelfShopOfferings_8": 68,
+    "BuyShopItem_TopShelfShopOfferings_9": 69,
+    "BuyShopItem_TopShelfShopOfferings_10": 70,
+    "BuyShopItem_TopShelfShopOfferings_11": 71,
+    "BuyShopItem_TopShelfShopOfferings_12": 72,
+    "BuyShopItem_TopShelfShopOfferings_13": 73,
+    "BuyShopItem_TopShelfShopOfferings_14": 74,
+    "SellItem_CurrentJokers_0": 75,
+    "SellItem_CurrentJokers_1": 76,
+    "SellItem_CurrentJokers_2": 77,
+    "SellItem_CurrentJokers_3": 78,
+    "SellItem_CurrentJokers_4": 79,
+    "SellItem_CurrentJokers_5": 80,
+    "SellItem_CurrentJokers_6": 81,
+    "SellItem_CurrentJokers_7": 82,
+    "SellItem_CurrentJokers_8": 83,
+    "SellItem_CurrentJokers_9": 84,
+    "SellItem_CurrentConsumables_0": 85,
+    "SellItem_CurrentConsumables_1": 86,
+    "SellItem_CurrentConsumables_2": 87,
+    "SellItem_CurrentConsumables_3": 88,
+    "SWAP_0_1": 89,
+    "SWAP_0_2": 90,
+    "SWAP_0_3": 91,
+    "SWAP_0_4": 92,
+    "SWAP_0_5": 93,
+    "SWAP_0_6": 94,
+    "SWAP_0_7": 95,
+    "SWAP_0_8": 96,
+    "SWAP_0_9": 97,
+    "SWAP_1_2": 98,
+    "SWAP_1_3": 99,
+    "SWAP_1_4": 100,
+    "SWAP_1_5": 101,
+    "SWAP_1_6": 102,
+    "SWAP_1_7": 103,
+    "SWAP_1_8": 104,
+    "SWAP_1_9": 105,
+    "SWAP_2_3": 106,
+    "SWAP_2_4": 107,
+    "SWAP_2_5": 108,
+    "SWAP_2_6": 109,
+    "SWAP_2_7": 110,
+    "SWAP_2_8": 111,
+    "SWAP_2_9": 112,
+    "SWAP_3_4": 113,
+    "SWAP_3_5": 114,
+    "SWAP_3_6": 115,
+    "SWAP_3_7": 116,
+    "SWAP_3_8": 117,
+    "SWAP_3_9": 118,
+    "SWAP_4_5": 119,
+    "SWAP_4_6": 120,
+    "SWAP_4_7": 121,
+    "SWAP_4_8": 122,
+    "SWAP_4_9": 123,
+    "SWAP_5_6": 124,
+    "SWAP_5_7": 125,
+    "SWAP_5_8": 126,
+    "SWAP_5_9": 127,
+    "SWAP_6_7": 128,
+    "SWAP_6_8": 129,
+    "SWAP_6_9": 130,
+    "SWAP_7_8": 131,
+    "SWAP_7_9": 132,
+    "SWAP_8_9": 133
+  }
+}

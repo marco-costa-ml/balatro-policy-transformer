@@ -58,7 +58,7 @@ Global action-map ordering must be fixed and versioned:
    - `SkipPack`
    - `RerollShop`
 
-2. Indexed single-slot families:
+2. Indexed single-slot families: -- depricated
    - `UseConsumable_0 ... UseConsumable_(MAX_CONSUMABLE_TARGETS-1)`
    - `SelectCard_0 ... SelectCard_(MAX_SELECT_CARD_TARGETS-1)`
    - `SelectPackItem_0 ... SelectPackItem_(MAX_PACK_ITEM_TARGETS-1)`
@@ -89,7 +89,7 @@ Then total action-space size:
 
 ---
 
-## 4) Index Semantics by Family
+## 4) Index Semantics by Family -- depricated
 
 - `UseConsumable_i`: i-th consumable candidate in canonical consumable target ordering.
 - `SelectCard_i`: i-th selectable card candidate in current select-card pool ordering.
@@ -103,20 +103,27 @@ All non-index fixed actions map to a single index each.
 
 ---
 
-## 5) Candidate Ordering Rules (Per Step)
+## 5) Candidate Ordering Rules (Per Step) -- depricated
 
-Per-step candidate ordering must be deterministic and tied to zone ordering (`position_in_zone`, then `slot_id`):
+Per-step candidate ordering must be deterministic and tied to zone ordering (`position_in_zone`, then `slot_id`).
 
-- consumables: selected zone first, then visible candidate zone fallback
-- cards: selected-card zone first for granularized intermediary generation; otherwise visible pool
-- pack/shop/inventory candidates: canonical zone list order then object order within zone
+Universal rule: selected zones first (in canonical order), then visible zones (in canonical order). Object order within a zone follows `(position_in_zone, slot_id)`.
 
-Recommended canonical zone priority:
+Per-family canonical concatenation (mirrors `granularize.py:canonical_candidates_for` and the formulas in §9): -- depricated
 
-- `BuyShopItem_i`: `VoucherShopOfferings` -> `PackShopOfferings` -> `TopShelfShopOfferings`
-- `SelectPackItem_i`: `PackOfferings` (or legacy overloaded equivalent)
-- `SellItem_i`: `CurrentJokers` then `CurrentConsumables` unless explicit selected zones are available
-- `BuyAndUseShopConsumable_i`: shop offerings filtered to consumables only
+- `UseConsumable_i`: `CurrentConsumablesSelected` -> `CurrentConsumables`
+- `SelectCard_i` (page = `In_Blind` or default): `CurrentHandSelected` -> `CurrentHandOrPackOfferingsSelected` (legacy) -> `CurrentHand` -> `CurrentHandOrPackOfferings` (legacy)
+- `SelectCard_i` (page = `In_TarotSpectral_Pack`): `TarotSpectralHandSelected` -> `TarotSpectralHand`
+- `SelectPackItem_i`: `PackOfferingsSelected` -> `CurrentPackSelected` (legacy) -> `CurrentHandOrPackOfferingsSelected` (legacy) -> `PackOfferings` -> `CurrentPack` (legacy) -> `CurrentHandOrPackOfferings` (legacy)
+- `BuyAndUseShopConsumable_i`: (`TopShelfShopOfferingsSelected` -> `ShopOfferingsSelected`, filtered to `object_type == consumable`) -> (`TopShelfShopOfferings` -> `ShopOfferings`, filtered to `object_type == consumable`)
+- `BuyShopItem_i`: `VoucherShopOfferingsSelected` -> `PackShopOfferingsSelected` -> `TopShelfShopOfferingsSelected` -> `ShopOfferingsSelected` -> `VoucherShopOfferings` -> `PackShopOfferings` -> `TopShelfShopOfferings` -> `ShopOfferings`
+- `SellItem_i`: `CurrentJokersSelected` -> `CurrentConsumablesSelected` -> `CurrentJokers` (or `CurrentJokersAll` as fallback when `CurrentJokers` is absent) -> `CurrentConsumables`
+
+`SelectCard_i` during granularized intermediary micro-steps uses a dynamic candidate list `prev_selected + current_pool`, where:
+- `prev_selected` = cards already committed earlier in this granularized sub-sequence,
+- `current_pool` = `unselected_base + remaining_to_select` shuffled by the granularizer's RNG and including the target.
+
+The integer `i` written into the action label is the position of the target's `slot_id` in this list.
 
 ---
 
@@ -163,19 +170,33 @@ must bump `action_map_version`.
 
 ---
 
-## 9) Required Decisions Before Locking v1
+## 9) Required Decisions Before Locking v1 -- depricated
 
-These values must be finalized in config before tensorization starts:
-- `MAX_CONSUMABLE_TARGETS`
-- `MAX_SELECT_CARD_TARGETS`
-- `MAX_PACK_ITEM_TARGETS`
-- `MAX_SHOP_CONSUMABLE_TARGETS`
-- `MAX_BUYSHOPITEM_TARGETS`
-- `MAX_SELLITEM_TARGETS`
-- `MAX_JOKER_SLOTS`
+Canonical counting rules (from `data/extracted`, no headroom):
+- `MAX_CONSUMABLE_TARGETS`: `len(CurrentConsumablesSelected) + len(CurrentConsumables)`
+- `MAX_SELECT_CARD_TARGETS`: `max(len(CurrentHandSelected) + len(CurrentHand), len(TarotSpectralHandSelected) + len(TarotSpectralHand), len(PackOfferingsSelected) + len(PackOfferings))`
+- `MAX_PACK_ITEM_TARGETS`: `len(PackOfferingsSelected) + len(PackOfferings)`
+- `MAX_SHOP_CONSUMABLE_TARGETS`: consumable-filtered count from `TopShelfShopOfferingsSelected + TopShelfShopOfferings + ShopOfferingsSelected + ShopOfferings`
+- `MAX_BUYSHOPITEM_TARGETS`: `len(VoucherShopOfferingsSelected + PackShopOfferingsSelected + TopShelfShopOfferingsSelected + ShopOfferingsSelected) + len(VoucherShopOfferings + PackShopOfferings + TopShelfShopOfferings + ShopOfferings)`
+- `MAX_SELLITEM_TARGETS`: `len(CurrentJokersSelected) + len(CurrentConsumablesSelected) + len(CurrentJokers) + len(CurrentConsumables)`, with `CurrentJokersAll` used as compatibility source when `CurrentJokers` is absent in extracted data
+- `MAX_JOKER_SLOTS`: `max(len(CurrentJokersAll), len(CurrentJokers), jokers_total)`
 
-Recommended approach:
-- compute maxima from full granularized corpus,
-- then add small headroom buffer (for robustness),
-- lock in versioned config.
+Joker exception:
+- selected/unselected disjoint-sum rules apply to non-joker target families,
+- do not sum `CurrentJokersAll` with `CurrentJokers`; treat `CurrentJokersAll` as the canonical all-joker slot basis.
+
+Finalize these values in config before tensorization starts:
+- `MAX_CONSUMABLE_TARGETS = 4` (observed max from extracted corpus)
+- `MAX_SELECT_CARD_TARGETS = 14` (observed max from extracted corpus)
+- `MAX_PACK_ITEM_TARGETS = 6` (observed max from extracted corpus)
+- `MAX_SHOP_CONSUMABLE_TARGETS = 4` (observed max from extracted corpus)
+- `MAX_BUYSHOPITEM_TARGETS = 13` (observed max from extracted corpus)
+- `MAX_SELLITEM_TARGETS = 12` (observed max from extracted corpus)
+- `MAX_JOKER_SLOTS = 9` (observed max from extracted corpus)
+
+Corpus note for reproducibility:
+- maxima are computed from `data/extracted/video_id=*/*.json` only,
+- finalized config values equal observed maxima (no headroom),
+- validation guard: `python compute_action_space_config.py --check-locked data/action_space_config.json --no-write` must pass in CI/data-refresh workflows,
+- if future extracted data exceeds any locked value, bump config and `action_map_version`.
 

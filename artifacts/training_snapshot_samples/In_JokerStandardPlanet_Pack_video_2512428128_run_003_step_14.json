@@ -1,0 +1,1129 @@
+{
+  "schema_version": "training_export/1.0.0",
+  "request_id": 14,
+  "page_name": "In_JokerStandardPlanet_Pack",
+  "source_kind": "pass_through",
+  "action_subtype": "skipplanetstandardbuffoonpack",
+  "state": {
+    "hands_left": 4,
+    "discards_left": 2,
+    "dollars": 3,
+    "ante": 1,
+    "round": 1,
+    "deck_remaining": 52,
+    "deck_total": 52,
+    "round_score": null,
+    "cash_out": null,
+    "reroll_price": null,
+    "consumables_current": 1,
+    "consumables_total": 2,
+    "jokers_current": 0,
+    "jokers_total": 5,
+    "hand_size_current": null,
+    "hand_size_total": null,
+    "hand_and_level_raw": null,
+    "ocr_extra": {}
+  },
+  "objects": [
+    {
+      "slot_id": 44922,
+      "zone": "CurrentConsumables",
+      "position_in_zone": 0,
+      "class_id": 256,
+      "object_type": "consumable",
+      "card": null,
+      "edition": null,
+      "modifier": null,
+      "seal": null,
+      "stickers": [],
+      "is_debuffed": false
+    },
+    {
+      "slot_id": 14938,
+      "zone": "CurrentDeck",
+      "position_in_zone": 0,
+      "class_id": 59,
+      "object_type": "deck",
+      "card": null,
+      "edition": null,
+      "modifier": null,
+      "seal": null,
+      "stickers": [],
+      "is_debuffed": false
+    },
+    {
+      "slot_id": 45689,
+      "zone": "CurrentStake",
+      "position_in_zone": 0,
+      "class_id": 268,
+      "object_type": "stake",
+      "card": null,
+      "edition": null,
+      "modifier": null,
+      "seal": null,
+      "stickers": [],
+      "is_debuffed": false
+    },
+    {
+      "slot_id": 37739,
+      "zone": "PackOfferings",
+      "position_in_zone": 0,
+      "class_id": 117,
+      "object_type": "joker",
+      "card": null,
+      "edition": null,
+      "modifier": null,
+      "seal": null,
+      "stickers": [],
+      "is_debuffed": false
+    },
+    {
+      "slot_id": 39103,
+      "zone": "PackOfferings",
+      "position_in_zone": 1,
+      "class_id": 157,
+      "object_type": "joker",
+      "card": null,
+      "edition": null,
+      "modifier": null,
+      "seal": null,
+      "stickers": [],
+      "is_debuffed": false
+    }
+  ],
+  "current_hand_or_pack": [],
+  "selected_cards": [],
+  "target_index": -1,
+  "persistent_state": {
+    "deck": {
+      "class_id": 59,
+      "name": null,
+      "is_magic": false,
+      "is_nebula": false,
+      "is_abandoned": false,
+      "is_checkered": false,
+      "is_zodiac": false,
+      "is_erratic": false
+    },
+    "stake": 268,
+    "tracked_deck_cards": [
+      {
+        "class_id": 0,
+        "object_type": "card",
+        "card": {
+          "rank": "A",
+          "rank_index": 0,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": true,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 1,
+        "object_type": "card",
+        "card": {
+          "rank": "2",
+          "rank_index": 1,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 2,
+        "object_type": "card",
+        "card": {
+          "rank": "3",
+          "rank_index": 2,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 3,
+        "object_type": "card",
+        "card": {
+          "rank": "4",
+          "rank_index": 3,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 4,
+        "object_type": "card",
+        "card": {
+          "rank": "5",
+          "rank_index": 4,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 5,
+        "object_type": "card",
+        "card": {
+          "rank": "6",
+          "rank_index": 5,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 6,
+        "object_type": "card",
+        "card": {
+          "rank": "7",
+          "rank_index": 6,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 7,
+        "object_type": "card",
+        "card": {
+          "rank": "8",
+          "rank_index": 7,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 8,
+        "object_type": "card",
+        "card": {
+          "rank": "9",
+          "rank_index": 8,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 9,
+        "object_type": "card",
+        "card": {
+          "rank": "T",
+          "rank_index": 9,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 10,
+        "object_type": "card",
+        "card": {
+          "rank": "J",
+          "rank_index": 10,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 11,
+        "object_type": "card",
+        "card": {
+          "rank": "Q",
+          "rank_index": 11,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 12,
+        "object_type": "card",
+        "card": {
+          "rank": "K",
+          "rank_index": 12,
+          "suit": "Spades",
+          "suit_index": 0,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 13,
+        "object_type": "card",
+        "card": {
+          "rank": "A",
+          "rank_index": 0,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": true,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 14,
+        "object_type": "card",
+        "card": {
+          "rank": "2",
+          "rank_index": 1,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 15,
+        "object_type": "card",
+        "card": {
+          "rank": "3",
+          "rank_index": 2,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 16,
+        "object_type": "card",
+        "card": {
+          "rank": "4",
+          "rank_index": 3,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 17,
+        "object_type": "card",
+        "card": {
+          "rank": "5",
+          "rank_index": 4,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 18,
+        "object_type": "card",
+        "card": {
+          "rank": "6",
+          "rank_index": 5,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 19,
+        "object_type": "card",
+        "card": {
+          "rank": "7",
+          "rank_index": 6,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 20,
+        "object_type": "card",
+        "card": {
+          "rank": "8",
+          "rank_index": 7,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 21,
+        "object_type": "card",
+        "card": {
+          "rank": "9",
+          "rank_index": 8,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 22,
+        "object_type": "card",
+        "card": {
+          "rank": "T",
+          "rank_index": 9,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 23,
+        "object_type": "card",
+        "card": {
+          "rank": "J",
+          "rank_index": 10,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 24,
+        "object_type": "card",
+        "card": {
+          "rank": "Q",
+          "rank_index": 11,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 25,
+        "object_type": "card",
+        "card": {
+          "rank": "K",
+          "rank_index": 12,
+          "suit": "Hearts",
+          "suit_index": 1,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 26,
+        "object_type": "card",
+        "card": {
+          "rank": "A",
+          "rank_index": 0,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": true,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 27,
+        "object_type": "card",
+        "card": {
+          "rank": "2",
+          "rank_index": 1,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 28,
+        "object_type": "card",
+        "card": {
+          "rank": "3",
+          "rank_index": 2,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 29,
+        "object_type": "card",
+        "card": {
+          "rank": "4",
+          "rank_index": 3,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 30,
+        "object_type": "card",
+        "card": {
+          "rank": "5",
+          "rank_index": 4,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 31,
+        "object_type": "card",
+        "card": {
+          "rank": "6",
+          "rank_index": 5,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 32,
+        "object_type": "card",
+        "card": {
+          "rank": "7",
+          "rank_index": 6,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 33,
+        "object_type": "card",
+        "card": {
+          "rank": "8",
+          "rank_index": 7,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 34,
+        "object_type": "card",
+        "card": {
+          "rank": "9",
+          "rank_index": 8,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 35,
+        "object_type": "card",
+        "card": {
+          "rank": "T",
+          "rank_index": 9,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 36,
+        "object_type": "card",
+        "card": {
+          "rank": "J",
+          "rank_index": 10,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 37,
+        "object_type": "card",
+        "card": {
+          "rank": "Q",
+          "rank_index": 11,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 38,
+        "object_type": "card",
+        "card": {
+          "rank": "K",
+          "rank_index": 12,
+          "suit": "Diamonds",
+          "suit_index": 2,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 39,
+        "object_type": "card",
+        "card": {
+          "rank": "A",
+          "rank_index": 0,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": true,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 40,
+        "object_type": "card",
+        "card": {
+          "rank": "2",
+          "rank_index": 1,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 41,
+        "object_type": "card",
+        "card": {
+          "rank": "3",
+          "rank_index": 2,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 42,
+        "object_type": "card",
+        "card": {
+          "rank": "4",
+          "rank_index": 3,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 43,
+        "object_type": "card",
+        "card": {
+          "rank": "5",
+          "rank_index": 4,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 44,
+        "object_type": "card",
+        "card": {
+          "rank": "6",
+          "rank_index": 5,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 45,
+        "object_type": "card",
+        "card": {
+          "rank": "7",
+          "rank_index": 6,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 46,
+        "object_type": "card",
+        "card": {
+          "rank": "8",
+          "rank_index": 7,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 47,
+        "object_type": "card",
+        "card": {
+          "rank": "9",
+          "rank_index": 8,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 48,
+        "object_type": "card",
+        "card": {
+          "rank": "T",
+          "rank_index": 9,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": false
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 49,
+        "object_type": "card",
+        "card": {
+          "rank": "J",
+          "rank_index": 10,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 50,
+        "object_type": "card",
+        "card": {
+          "rank": "Q",
+          "rank_index": 11,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      },
+      {
+        "class_id": 51,
+        "object_type": "card",
+        "card": {
+          "rank": "K",
+          "rank_index": 12,
+          "suit": "Clubs",
+          "suit_index": 3,
+          "is_ace": false,
+          "is_face": true
+        },
+        "modifier": null,
+        "edition": null,
+        "seal": null,
+        "stickers": []
+      }
+    ],
+    "deck_modifiers": {
+      "no_face_cards_start": false,
+      "spades_hearts_only_start": false,
+      "randomized_starting_deck": false
+    },
+    "last_tarot_planet": null,
+    "ecto_minus": 0,
+    "skips": 0,
+    "hands_played": 1,
+    "unused_discards": 1,
+    "first_hand": false,
+    "first_discard": false,
+    "vouchers_redeemed": [],
+    "bosses_used": [],
+    "ante_boss_blind": null,
+    "small_status": 1,
+    "big_status": 1,
+    "is_boss_blind_rerolled": false,
+    "hands": {
+      "Flush Five": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Flush House": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Five of a Kind": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Straight Flush": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Four of a Kind": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Full House": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Flush": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Straight": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Three of a Kind": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Two Pair": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "Pair": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      },
+      "High Card": {
+        "level": 1,
+        "played": 0,
+        "played_this_round": 0
+      }
+    },
+    "swap_count": 0,
+    "last_swap": null,
+    "deck_detected": true,
+    "prev_jokers_all": null,
+    "hand_and_level_unparsed_count": 0,
+    "unhandled_random_consumable_count": 0
+  },
+  "legal_actions": null,
+  "meta": {
+    "provenance": "data/granularized + data/persistent_state (state BEFORE step)",
+    "video_id": "2512428128",
+    "run_index": 3,
+    "run_file": "video_id=2512428128/run_003.json",
+    "step_id": 14,
+    "frame_idx": 25174,
+    "recorded_action": "SkipPack",
+    "source_action": "SkipPack",
+    "micro_index": 0,
+    "swap_pair": null
+  },
+  "_granularizer_extras": {
+    "zones": {
+      "current_hand_or_pack": [
+        {
+          "slot_id": 37739,
+          "zone": "PackOfferings",
+          "position_in_zone": 0,
+          "class_id": 117,
+          "object_type": "joker",
+          "card": null,
+          "edition": null,
+          "modifier": null,
+          "seal": null,
+          "stickers": [],
+          "is_debuffed": false
+        },
+        {
+          "slot_id": 39103,
+          "zone": "PackOfferings",
+          "position_in_zone": 1,
+          "class_id": 157,
+          "object_type": "joker",
+          "card": null,
+          "edition": null,
+          "modifier": null,
+          "seal": null,
+          "stickers": [],
+          "is_debuffed": false
+        }
+      ],
+      "selected_cards": [],
+      "current_jokers": [],
+      "current_jokers_all": [],
+      "current_consumables": [
+        {
+          "slot_id": 44922,
+          "zone": "CurrentConsumables",
+          "position_in_zone": 0,
+          "class_id": 256,
+          "object_type": "consumable",
+          "card": null,
+          "edition": null,
+          "modifier": null,
+          "seal": null,
+          "stickers": [],
+          "is_debuffed": false
+        }
+      ],
+      "shop_offerings": [],
+      "current_pack": [
+        {
+          "slot_id": 37739,
+          "zone": "PackOfferings",
+          "position_in_zone": 0,
+          "class_id": 117,
+          "object_type": "joker",
+          "card": null,
+          "edition": null,
+          "modifier": null,
+          "seal": null,
+          "stickers": [],
+          "is_debuffed": false
+        },
+        {
+          "slot_id": 39103,
+          "zone": "PackOfferings",
+          "position_in_zone": 1,
+          "class_id": 157,
+          "object_type": "joker",
+          "card": null,
+          "edition": null,
+          "modifier": null,
+          "seal": null,
+          "stickers": [],
+          "is_debuffed": false
+        }
+      ],
+      "blind_offerings": [],
+      "blind_offerings_next": [],
+      "offered_tag": [],
+      "tarot_spectral_hand": [],
+      "tarot_spectral_hand_selected": []
+    },
+    "selected_object": null,
+    "source_event_index": 5
+  }
+}

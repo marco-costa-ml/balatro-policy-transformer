@@ -19,15 +19,15 @@ Output:
 - `SelectBlind` / `SkipBlind` / `RerollBossBlind`: only `Blind_Select`
 - `DiscardHand` / `PlayHand`: only `In_Blind`
 - `UseConsumable`: masked if `CurrentConsumablesSelected.length <= 0`
-- `SelectCard(i)`: only `In_Blind` or `In_TarotSpectral_Pack`
+- `SelectCard`: only `In_Blind` or `In_TarotSpectral_Pack`
 - `CashOut`: only `Cash_Out`
-- `BuyShopItem(i)`: only `In_Shop`
+- `BuyShopItem`: only `In_Shop`
 - `BuyAndUseShopConsumable(i)`: only `In_Shop`
 - `LeaveShop`: only `In_Shop`
 - `RerollShop`: only `In_Shop`
-- `SelectPackItem(i)`: only `In_JokerStandardPlanet_Pack` (source wording)
+- `SelectPackItem`: only `In_JokerStandardPlanet_Pack` AND `In_TarotSpectral_Pack`
 - `SkipPack`: only `In_TarotSpectral_Pack` and `In_JokerStandardPlanet_Pack`
-- `SellItem(i)`: globally available (then item-gated)
+- `SellItem`: globally available (then item-gated)
 
 ---
 
@@ -38,19 +38,21 @@ Output:
   - allow iff voucher `346` exists, or voucher `324` exists and `is_boss_blind_rerolled == false`
   - else mask
 - `DiscardHand` / `PlayHand`: mask unless `selected_cards.length > 0`
-- `BuyShopItem(i)`:
+- `BuyShopItem`:
   - mask if `dollars < shop_offerings(i).cost`
   - mask joker buys when `jokers_current >= jokers_total` and edition is not negative
   - mask consumable buys when `consumables_current >= consumables_total`
-- `SellItem(i)`: mask if selected item has sticker `class_id 369` (eternal)
+- `SellItem`: mask if selected item has sticker `class_id 369` (eternal)
 - `RerollShop`: mask if `reroll_price > dollars`
-- `SelectPackItem(i)`: mask when selected pack item is joker (`80-229`) and `jokers_current >= jokers_total`
+- `SelectPackItem`: mask when selected pack item is joker (`80-229`) and `jokers_current >= jokers_total`
 
 ---
 
 ## 4) UseConsumable Family Constraints
 
 ## 4.1 Card-Selection Cardinality
+
+a "card" is defined as a playing card object in the PendingCards zone.
 
 Exactly 1 card selected:
 - `263 c_talisman`
@@ -138,17 +140,38 @@ Hex special joker-edition constraint:
 
 ---
 
-## 5) BuyAndUseShopConsumable and SelectPackItem
+## 5) Per-Zone Indexed Subfamily Layout
 
-- `BuyAndUseShopConsumable(i)`:
-  - generated for consumables in shop offerings,
-  - uses same logic family as `UseConsumable`,
-  - source note: selected card index is always 0.
+The action map (`data/action_map.json`, schema 2.0.0) flattens all
+target-bearing actions into per-(base, zone) subfamilies. Each subfamily
+emits indices `i in [0, max_values_per_zone[base_zone])` and uses labels
+`f"{base}_{zone}_{i}"`. The mask builder enumerates ``step.objects``
+whose canonical ``zone`` matches and sets a bit at each object's
+``position_in_zone`` (the same field used as ``target_position`` by
+granularize). This guarantees ``action_mask[target_action_id] == 1``
+even when the legal targets are not at the leading positions of the
+zone (e.g. a `[joker, consumable, joker]` shop).
 
-- `SelectPackItem(i)`:
-  - generated for each pack offering candidate,
-  - source marks older overloaded-zone wording as deprecated,
-  - selected-card intermediary context should come from `TarotSpectralHandSelected` for tarot path.
+| Subfamily key                                       | Source zone (in `step.objects`)            |
+|-----------------------------------------------------|--------------------------------------------|
+| `UseConsumable_CurrentConsumables`                  | `CurrentConsumables`                       |
+| `SelectCard_CurrentHand`                            | `CurrentHand`                              |
+| `SelectCard_TarotSpectralHand`                      | `TarotSpectralHand`                        |
+| `SelectPackItem_PackOfferings`                      | `PackOfferings`                            |
+| `BuyAndUseShopConsumable_TopShelfShopOfferings`     | `TopShelfShopOfferings` (consumable-typed) |
+| `BuyShopItem_VoucherShopOfferings`                  | `VoucherShopOfferings`                     |
+| `BuyShopItem_PackShopOfferings`                     | `PackShopOfferings`                        |
+| `BuyShopItem_TopShelfShopOfferings`                 | `TopShelfShopOfferings` (any object_type)  |
+| `SellItem_CurrentJokers`                            | `CurrentJokers`                            |
+| `SellItem_CurrentConsumables`                       | `CurrentConsumables`                       |
+
+Page gating (§2) operates on the bare base name (`BuyShopItem`,
+`SellItem`, ...); all subfamilies under a permitted base are eligible.
+
+`BuyAndUseShopConsumable_TopShelfShopOfferings` is restricted to
+consumable-typed objects (you cannot "buy and use" a joker).
+`BuyShopItem_TopShelfShopOfferings` accepts both jokers (added to joker
+slots) and consumables (added to consumable slots).
 
 ---
 
@@ -172,5 +195,5 @@ Mask conditions:
 - mask computation must be deterministic.
 - target-required actions should not be unmasked without resolvable targets.
 - include diagnostics for all-masked states and unresolved target cases.
-- keep zone alias handling compatible with both overloaded and split zone naming schemes.
+- the mask builder reads candidate counts from the canonical `step.objects` zone names emitted by `granularize.py` (schema 3.0.0); there is no longer a separate zone-alias dict.
 

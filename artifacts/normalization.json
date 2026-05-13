@@ -1,0 +1,239 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-05-12T20:47:59.702533+00:00",
+  "n_steps": 735288,
+  "transforms": {
+    "ocr.hands_left": "minmax",
+    "ocr.discards_left": "minmax",
+    "ocr.dollars": "log1p_zscore",
+    "ocr.ante": "minmax",
+    "ocr.round": "minmax",
+    "ocr.deck_remaining": "minmax",
+    "ocr.deck_total": "minmax",
+    "ocr.round_score": "log1p_zscore",
+    "ocr.cash_out": "log1p_zscore",
+    "ocr.reroll_price": "log1p_zscore",
+    "ocr.consumables_current": "minmax",
+    "ocr.consumables_total": "minmax",
+    "ocr.jokers_current": "minmax",
+    "ocr.jokers_total": "minmax",
+    "ocr.hand_size_current": "minmax",
+    "ocr.hand_size_total": "minmax",
+    "state.skips": "log1p_zscore",
+    "state.hands_played": "log1p_zscore",
+    "state.unused_discards": "log1p_zscore",
+    "state.ecto_minus": "minmax",
+    "hand_level": "log1p_zscore",
+    "hand_played": "log1p_zscore",
+    "hand_played_this_round": "minmax"
+  },
+  "stats": {
+    "hand_level": {
+      "count": 8823456,
+      "mean": 2.5615416453595725,
+      "std": 5.025020127923966,
+      "min": 1.0,
+      "max": 116.0,
+      "p1": 1.0,
+      "p99": 30.0
+    },
+    "hand_played": {
+      "count": 8823456,
+      "mean": 0.0,
+      "std": 1.0,
+      "min": 0.0,
+      "max": 0.0,
+      "p1": 0.0,
+      "p99": 0.0
+    },
+    "hand_played_this_round": {
+      "count": 8823456,
+      "mean": 0.0,
+      "std": 1.0,
+      "min": 0.0,
+      "max": 0.0,
+      "p1": 0.0,
+      "p99": 0.0
+    },
+    "ocr.ante": {
+      "count": 735288,
+      "mean": 7.307985442438934,
+      "std": 5.125738947801945,
+      "min": 0.0,
+      "max": 39.0,
+      "p1": 1.0,
+      "p99": 23.0
+    },
+    "ocr.cash_out": {
+      "count": 28250,
+      "mean": 12.174265486725602,
+      "std": 6.917943704289218,
+      "min": 0.0,
+      "max": 177.0,
+      "p1": 2.0,
+      "p99": 32.0
+    },
+    "ocr.consumables_current": {
+      "count": 735288,
+      "mean": 1.29152386547853,
+      "std": 4.5732797026914875,
+      "min": 0.0,
+      "max": 688.0,
+      "p1": 0.0,
+      "p99": 8.0
+    },
+    "ocr.consumables_total": {
+      "count": 735288,
+      "mean": 2.4564809979220374,
+      "std": 4.635822005168102,
+      "min": 0.0,
+      "max": 797.0,
+      "p1": 0.0,
+      "p99": 4.0
+    },
+    "ocr.deck_remaining": {
+      "count": 735288,
+      "mean": 37.962227045726905,
+      "std": 19.989317470104638,
+      "min": 0.0,
+      "max": 848.0,
+      "p1": 5.0,
+      "p99": 88.0
+    },
+    "ocr.deck_total": {
+      "count": 735288,
+      "mean": 47.80147914830847,
+      "std": 17.55281619058534,
+      "min": 0.0,
+      "max": 518.0,
+      "p1": 16.0,
+      "p99": 110.0
+    },
+    "ocr.discards_left": {
+      "count": 735288,
+      "mean": 1.8448458291173018,
+      "std": 1.3639242321859852,
+      "min": 0.0,
+      "max": 86.0,
+      "p1": 0.0,
+      "p99": 5.0
+    },
+    "ocr.dollars": {
+      "count": 735288,
+      "mean": 120.13942972005462,
+      "std": 431.5933369803392,
+      "min": 0.0,
+      "max": 33118.0,
+      "p1": 0.0,
+      "p99": 1473.0
+    },
+    "ocr.hand_size_current": {
+      "count": 382,
+      "mean": 11.248691099476428,
+      "std": 16.47692846105212,
+      "min": 0.0,
+      "max": 77.0,
+      "p1": 1.0,
+      "p99": 77.0
+    },
+    "ocr.hand_size_total": {
+      "count": 382,
+      "mean": 7.973821989528787,
+      "std": 1.7715587838566202,
+      "min": 1.0,
+      "max": 18.0,
+      "p1": 1.0,
+      "p99": 14.0
+    },
+    "ocr.hands_left": {
+      "count": 735288,
+      "mean": 3.711405598894629,
+      "std": 1.2655393901364242,
+      "min": 0.0,
+      "max": 64.0,
+      "p1": 1.0,
+      "p99": 7.0
+    },
+    "ocr.jokers_current": {
+      "count": 735288,
+      "mean": 4.74378202826666,
+      "std": 2.2781489538631052,
+      "min": 0.0,
+      "max": 117.0,
+      "p1": 0.0,
+      "p99": 9.0
+    },
+    "ocr.jokers_total": {
+      "count": 735288,
+      "mean": 5.3928950288866115,
+      "std": 1.3117705277171219,
+      "min": 0.0,
+      "max": 98.0,
+      "p1": 0.0,
+      "p99": 9.0
+    },
+    "ocr.reroll_price": {
+      "count": 162554,
+      "mean": 7.920887828044885,
+      "std": 25.724844254179022,
+      "min": 0.0,
+      "max": 8160.0,
+      "p1": 1.0,
+      "p99": 35.0
+    },
+    "ocr.round": {
+      "count": 735288,
+      "mean": 21.31587078804566,
+      "std": 15.93717243717089,
+      "min": 0.0,
+      "max": 96.0,
+      "p1": 1.0,
+      "p99": 69.0
+    },
+    "ocr.round_score": {
+      "count": 486882,
+      "mean": 97614953.24674013,
+      "std": 3520686782.830362,
+      "min": 0.0,
+      "max": 919035603366.0,
+      "p1": 0.0,
+      "p99": 91252568.0
+    },
+    "state.ecto_minus": {
+      "count": 735288,
+      "mean": 0.1728519981286234,
+      "std": 0.45914546280155316,
+      "min": 0.0,
+      "max": 3.0,
+      "p1": 0.0,
+      "p99": 2.0
+    },
+    "state.hands_played": {
+      "count": 735288,
+      "mean": 39.546150623973006,
+      "std": 31.5555481914512,
+      "min": 0.0,
+      "max": 217.0,
+      "p1": 0.0,
+      "p99": 132.0
+    },
+    "state.skips": {
+      "count": 735288,
+      "mean": 2.1438919171807163,
+      "std": 5.518653489577611,
+      "min": 0.0,
+      "max": 42.0,
+      "p1": 0.0,
+      "p99": 24.0
+    },
+    "state.unused_discards": {
+      "count": 735288,
+      "mean": 14.59086235597474,
+      "std": 19.473051923993825,
+      "min": 0.0,
+      "max": 255.0,
+      "p1": 0.0,
+      "p99": 82.0
+    }
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "schema_version": "2.0.0",
+  "generated_at_utc": "2026-05-12T20:26:34.990072+00:00",
+  "source_directory": "data/parsed",
+  "files_scanned": 1973,
+  "events_scanned": 371000,
+  "max_values": {
+    "MAX_JOKER_SLOTS": 10
+  },
+  "max_values_per_zone": {
+    "BuyAndUseShopConsumable_TopShelfShopOfferings": 4,
+    "BuyShopItem_PackShopOfferings": 2,
+    "BuyShopItem_TopShelfShopOfferings": 15,
+    "BuyShopItem_VoucherShopOfferings": 4,
+    "SelectCard_CurrentHand": 15,
+    "SelectCard_TarotSpectralHand": 15,
+    "SelectPackItem_PackOfferings": 6,
+    "SellItem_CurrentConsumables": 4,
+    "SellItem_CurrentJokers": 10,
+    "UseConsumable_CurrentConsumables": 4
+  },
+  "observed_maxima_per_zone": {
+    "BuyAndUseShopConsumable_TopShelfShopOfferings": 4,
+    "BuyShopItem_PackShopOfferings": 2,
+    "BuyShopItem_TopShelfShopOfferings": 15,
+    "BuyShopItem_VoucherShopOfferings": 4,
+    "SelectCard_CurrentHand": 15,
+    "SelectCard_TarotSpectralHand": 15,
+    "SelectPackItem_PackOfferings": 6,
+    "SellItem_CurrentConsumables": 4,
+    "SellItem_CurrentJokers": 10,
+    "UseConsumable_CurrentConsumables": 4
+  },
+  "provenance_per_zone": {
+    "UseConsumable_CurrentConsumables": {
+      "file": "data/parsed/video_id=2460439050/run_003.json",
+      "event_index": 560,
+      "frame_idx": 130425,
+      "page_name": "In_Blind",
+      "observed_value": 4
+    },
+    "SellItem_CurrentConsumables": {
+      "file": "data/parsed/video_id=2460439050/run_003.json",
+      "event_index": 560,
+      "frame_idx": 130425,
+      "page_name": "In_Blind",
+      "observed_value": 4
+    },
+    "SelectCard_CurrentHand": {
+      "file": "data/parsed/video_id=2515107702/run_002.json",
+      "event_index": 663,
+      "frame_idx": 92912,
+      "page_name": "In_Blind",
+      "observed_value": 15
+    },
+    "BuyShopItem_VoucherShopOfferings": {
+      "file": "data/parsed/video_id=2540925419/run_001.json",
+      "event_index": 717,
+      "frame_idx": 88235,
+      "page_name": "In_Shop",
+      "observed_value": 4
+    },
+    "BuyShopItem_PackShopOfferings": {
+      "file": "data/parsed/video_id=2426724416/run_001.json",
+      "event_index": 4,
+      "frame_idx": 1390,
+      "page_name": "In_Shop",
+      "observed_value": 2
+    },
+    "BuyShopItem_TopShelfShopOfferings": {
+      "file": "data/parsed/video_id=2506290580/run_024.json",
+      "event_index": 525,
+      "frame_idx": 457505,
+      "page_name": "In_Shop",
+      "observed_value": 15
+    },
+    "SelectPackItem_PackOfferings": {
+      "file": "data/parsed/video_id=2457093945/run_012.json",
+      "event_index": 208,
+      "frame_idx": 163788,
+      "page_name": "In_JokerStandardPlanet_Pack",
+      "observed_value": 6
+    },
+    "SellItem_CurrentJokers": {
+      "file": "data/parsed/video_id=2729936854/run_012.json",
+      "event_index": 102,
+      "frame_idx": 282824,
+      "page_name": "In_Blind",
+      "observed_value": 10
+    },
+    "SelectCard_TarotSpectralHand": {
+      "file": "data/parsed/video_id=2699631772/run_007.json",
+      "event_index": 296,
+      "frame_idx": 135413,
+      "page_name": "In_TarotSpectral_Pack",
+      "observed_value": 15
+    },
+    "BuyAndUseShopConsumable_TopShelfShopOfferings": {
+      "file": "data/parsed/video_id=2426724416/run_007.json",
+      "event_index": 369,
+      "frame_idx": 109689,
+      "page_name": "In_Shop",
+      "observed_value": 4
+    },
+    "MAX_JOKER_SLOTS": {
+      "file": "data/parsed/video_id=2729936854/run_012.json",
+      "event_index": 102,
+      "frame_idx": 282824,
+      "page_name": "In_Blind",
+      "observed_value": 10
+    }
+  },
+  "policy": {
+    "corpus": "parsed",
+    "headroom": "none",
+    "counting_rule": "max(len(union of {Foo, FooAll, FooSelected})), deduped by slot_id",
+    "BuyAndUseShopConsumable_rule": "TopShelfShopOfferings restricted to object_type in {consumable, tarot, planet, spectral}."
+  },
+  "subfamilies": [
+    {
+      "base": "UseConsumable",
+      "zone": "CurrentConsumables",
+      "key": "UseConsumable_CurrentConsumables"
+    },
+    {
+      "base": "SelectCard",
+      "zone": "CurrentHand",
+      "key": "SelectCard_CurrentHand"
+    },
+    {
+      "base": "SelectCard",
+      "zone": "TarotSpectralHand",
+      "key": "SelectCard_TarotSpectralHand"
+    },
+    {
+      "base": "SelectPackItem",
+      "zone": "PackOfferings",
+      "key": "SelectPackItem_PackOfferings"
+    },
+    {
+      "base": "BuyAndUseShopConsumable",
+      "zone": "TopShelfShopOfferings",
+      "key": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+    },
+    {
+      "base": "BuyShopItem",
+      "zone": "VoucherShopOfferings",
+      "key": "BuyShopItem_VoucherShopOfferings"
+    },
+    {
+      "base": "BuyShopItem",
+      "zone": "PackShopOfferings",
+      "key": "BuyShopItem_PackShopOfferings"
+    },
+    {
+      "base": "BuyShopItem",
+      "zone": "TopShelfShopOfferings",
+      "key": "BuyShopItem_TopShelfShopOfferings"
+    },
+    {
+      "base": "SellItem",
+      "zone": "CurrentJokers",
+      "key": "SellItem_CurrentJokers"
+    },
+    {
+      "base": "SellItem",
+      "zone": "CurrentConsumables",
+      "key": "SellItem_CurrentConsumables"
+    }
+  ]
+}

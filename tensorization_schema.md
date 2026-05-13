@@ -48,6 +48,7 @@ Constraints from source spec:
 Action map artifacts:
 - `action_map.json` (index -> label)
 - `action_map_version` in dataset metadata
+- `data/action_space_config.json` as the source-of-truth MAX constant artifact used to build `action_map.json`
 
 ---
 
@@ -89,6 +90,10 @@ Define and freeze configuration:
 - `max_shop_offerings` (or per-offering-zone caps)
 - `max_joker_slots` (drives swap action family size)
 - sequence truncation/windowing limits
+
+Important separation:
+- input-shape limits above define model input tensor dimensions,
+- action-space MAX constants (`MAX_*_TARGETS`, `MAX_JOKER_SLOTS`) define policy output/mask dimensions and are sourced from `data/action_space_config.json`.
 
 Padding policy:
 - PAD index for categorical channels

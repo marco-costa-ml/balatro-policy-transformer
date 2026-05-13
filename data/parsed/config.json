@@ -101,16 +101,6 @@
       "type": "int | null",
       "raw_key": "state.ocr.hand_values",
       "transform": "split on '/', take denominator, cast int"
-    },
-    "hand_and_level_raw": {
-      "type": "string | null",
-      "raw_key": "state.ocr.hand_and_level",
-      "transform": "string passthrough"
-    },
-    "ocr_extra": {
-      "type": "object",
-      "raw_key": "state.ocr.*",
-      "transform": "pass through unknown OCR keys"
     }
   },
   "object_fields": {
@@ -127,24 +117,25 @@
         "BlindOfferingsNext",
         "BlindToken",
         "CurrentConsumables",
+        "CurrentConsumablesAll",
         "CurrentConsumablesSelected",
         "CurrentDeck",
-        "CurrentHand",
+        "CurrentHandAll",
         "CurrentHandSelected",
         "CurrentJokersAll",
         "CurrentJokersSelected",
         "CurrentStake",
         "CurrentTags",
         "OfferedTag",
-        "PackOfferings",
+        "PackOfferingsAll",
         "PackOfferingsSelected",
-        "PackShopOfferings",
+        "PackShopOfferingsAll",
         "PackShopOfferingsSelected",
-        "TarotSpectralHand",
+        "TarotSpectralHandAll",
         "TarotSpectralHandSelected",
-        "TopShelfShopOfferings",
+        "TopShelfShopOfferingsAll",
         "TopShelfShopOfferingsSelected",
-        "VoucherShopOfferings",
+        "VoucherShopOfferingsAll",
         "VoucherShopOfferingsSelected"
       ]
     },

@@ -2,178 +2,213 @@
 
 ## 1) Scope and Source of Truth
 
-This document defines granularization behavior using `data/masking_schema.py` as the authoritative requirement source.
-
-Granularization converts parsed events into micro-steps with:
-- one action per emitted step,
-- explicit target-object semantics,
-- intermediary `SelectCard(i)` generation where required,
-- synthetic `SWAP(i, j)` generation from joker order changes.
-
-Masking policy details live in `mask_schema.md`.
-Persistent/derived state details live in `state_schema.md`.
-Tensor-space flattening details live in `tensorization_schema.md`.
+This document describes the behavior of `granularize.py` (schema version
+`3.0.0`). The authoritative requirement source is
+`data/masking_schema_disorganized.md` lines 264-374. Masking policy
+details live in `mask_schema.md`. Action-label / index conventions are
+documented in `action_space_schema.md`.
 
 ---
 
-## 2) Canonical Action Set
+## 2) Output Step Schema
 
-Base actions:
-1. `StartNewRun`
-2. `SelectBlind`
-3. `SkipBlind`
-4. `RerollBossBlind`
-5. `DiscardHand`
-6. `PlayHand`
-7. `UseConsumable(i)`
-8. `SelectCard(i)`
-9. `CashOut`
-10. `SelectPackItem(i)`
-11. `BuyAndUseShopConsumable(i)`
-12. `BuyShopItem(i)`
-13. `LeaveShop`
-14. `SkipPack`
-15. `SellItem(i)`
-16. `RerollShop`
-17. `SWAP(i, j)`
-
-Action subtype families:
-- `BuyShopItem`: `buyvoucher`, `buyandopenplanetstandardbuffoonpack`, `buytopshelfjoker`, `buyandopentarotspectralpack`, `buytopshelfconsumable`
-- `SelectPackItem`: `selectpackitemtarot`, `selectpackitemcard`, `selectpackitemjoker`, `selectpackitemplanet`
-- `SellItem`: `selljoker`, `sellconsumable`
-- `SkipPack`: `skipplanetstandardbuffoonpack`, `skiptarotspectralpack`, `skipplanetstandardbuffoonpackblind`, `skiptarotspectralpackblind`
-
----
-
-## 3) Intermediary Event Generation
-
-## 3.1 Always Granularized
-
-- `DiscardHand`:
-  - emit `SelectCard(i)` for each selected card in order,
-  - emit final `DiscardHand`.
-- `PlayHand`:
-  - emit `SelectCard(i)` for each selected card in order,
-  - emit final `PlayHand`.
-- `SWAP(i, j)`:
-  - synthetic only; never directly present in extracted events.
-
-## 3.2 Conditionally Granularized
-
-- `UseConsumable`
-- `SelectPackItem`
-
-If target parent class is in:
-`{249, 251, 252, 259, 263, 264, 298, 299, 300, 302, 304, 305, 309, 310, 311, 312, 313, 314, 315, 317, 319}`,
-emit intermediary `SelectCard(i)` events before final action.
-
-If target is not in the set, do not emit intermediary select-card events for that action.
-
----
-
-## 4) Target Resolution Contract
-
-Default target rules:
-- `DiscardHand`: intermediary targets are `CurrentHandOrPackOfferingsSelected[i]`
-- `PlayHand`: intermediary targets are `CurrentHandOrPackOfferingsSelected[i]`
-- `UseConsumable`: `CurrentConsumablesSelected[0]`
-- `BuyAndUseShopConsumable`: `TopShelfShopOfferingsSelected[0]` (plus mask constraints)
-- `SellItem/selljoker`: `CurrentJokersSelected[0]`
-- `SellItem/sellconsumable`: `CurrentConsumablesSelected[0]`
-- `SkipPack`: no target
-- `SWAP(i, j)`: target is pair `(i, j)` over joker slots
-
-Subtype-specific target rules:
-- `BuyShopItem/buyvoucher`: `VoucherShopOfferingsSelected[0]`
-- `BuyShopItem/buyandopenplanetstandardbuffoonpack`: `PackShopOfferingsSelected[0]`
-- `BuyShopItem/buytopshelfjoker`: `TopShelfShopOfferingsSelected[0]`
-- `BuyShopItem/buyandopentarotspectralpack`: `PackShopOfferingsSelected[0]`
-- `BuyShopItem/buytopshelfconsumable`: `TopShelfShopOfferingsSelected[0]`
-- `SelectPackItem/selectpackitemtarot`:
-  - final target: `CurrentHandOrPackOfferingsSelected[0]` (legacy naming in source spec),
-  - intermediary select-card targets: `TarotSpectralHandSelected[i]`
-- `SelectPackItem/selectpackitemcard|joker|planet`: `CurrentHandOrPackOfferingsSelected[0]`
-
----
-
-## 5) SWAP Synthesis
-
-`SWAP` generation is based on joker-order deltas in `CurrentJokersAll`.
-
-Snapshot exclusion actions:
-- `StartNewRun`
-- `SkipBlind`
-- `SelectCard`
-- `RerollShop`
-- `RerollBossBlind`
-- `SkipPack`
-
-Algorithm (from source spec):
-
-```python
-current = start.copy()
-actions = []
-for i in range(len(current)):
-    if current[i] != end[i]:
-        j = current.index(end[i])
-        actions.append(SWAP(i, j))
-        current[i], current[j] = current[j], current[i]
-```
-
-Set reconciliation rule:
-- if jokers were added/removed, reconcile differences first,
-- generate swaps over shared joker identities only.
-
-Additional invariant:
-- `CurrentJokersAll` intentionally duplicates `CurrentJokersSelected[0]`;
-  normalize duplicate identity entries before computing permutation deltas.
-
----
-
-## 6) Zone Naming and Migration Note
-
-`data/masking_schema.py` still references overloaded zones:
-- `CurrentHandOrPackOfferings`
-- `CurrentHandOrPackOfferingsSelected`
-
-It also marks parts of this logic as deprecated/confusing for select-pack behavior and references `TarotSpectralHand*` for selected-card context.
-
-Implementation should support both:
-- legacy overloaded zones (for compatibility with existing parsed/granularized data),
-- split hand/pack zones in newer extractor outputs.
-
----
-
-## 7) Output Schema (Granularized Step)
-
-Each output step should include:
+Each emitted step (row in `data/granularized/video_id=*/run_*.json`):
 
 ```json
 {
-  "video_id": "string",
-  "run_index": 0,
+  "step_id": 0,
   "frame_idx": 0,
-  "page_name": "string",
-  "action": "string",
-  "action_subtype": "string|null",
-  "source_action": "string",
-  "source_action_subtype": "string|null",
+  "page_name": "Blind_Select",
   "source_event_index": 0,
   "micro_index": 0,
   "source_kind": "pass_through | select | commit | swap_synth",
-  "selected_object": "object|null",
-  "state": "parsed OCR state snapshot",
-  "objects": "[object] parsed object snapshot",
-  "zones": "normalized zone projections",
-  "step_id": 0
+  "source_action": "PlayHand",
+  "source_action_subtype": "buyvoucher | null",
+  "action": "PlayHand | BuyShopItem_VoucherShopOfferings_0 | SWAP_0_1 | ...",
+  "action_subtype": "buyvoucher | null",
+  "target_zone": "CurrentHand | VoucherShopOfferings | ... | null",
+  "target_position": 0,
+  "swap_pair": [0, 1],
+  "selected_object": {"object": "<copy of target object>"},
+  "pending_cards": ["<card>", "..."],
+  "state": {"hands_left": 4, "...": "..."},
+  "objects": ["<obj>", "..."]
 }
+```
+
+- `selected_object` is non-null only when `target_zone` / `target_position`
+  are set; its `object` field equals `objects[target_zone][target_position]`.
+- `swap_pair` is non-null only for `source_kind == "swap_synth"`.
+- `pending_cards` is empty for most steps. It accumulates during a
+  `SelectCard` micro-sequence and contains the final selected-card set
+  on the parent `commit` step.
+
+Removed vs schema 2.x: `target_index`, `zones` (canonical-alias dict),
+`current_hand_or_pack`, `current_hand`, `selected_cards`. All replaced
+by `target_zone` / `target_position` / `pending_cards` / inlined
+`objects`.
+
+---
+
+## 3) Zone Normalization
+
+Applied when reading parsed `event.objects[i].zone`:
+
+- `FooAll` -> `Foo` (e.g. `CurrentHandAll` -> `CurrentHand`,
+  `PackOfferingsAll` -> `PackOfferings`, `CurrentJokersAll` -> `CurrentJokers`).
+- `FooSelected` -> dropped from output entirely (read only to identify
+  targets and selected cards).
+- A bare zone `Foo` that has a paired `FooAll` or `FooSelected`
+  elsewhere is collapsed into the same `Foo` group (deduped by
+  `slot_id`).
+- All other zones pass through unchanged (`BlindOffering`, `CurrentDeck`,
+  `CurrentTags`, `OfferedTag`, `BigBlindTag`, `BlindToken`, `BlindOfferingsNext`,
+  `CurrentStake`, `PackConsumableUse`, `VoucherConsumableRedeemUse`).
+
+Plus a synthetic zone `PendingCards` (script-local) that holds playing
+cards selected so far within the current parent sequence and is emitted
+into `objects` for every step.
+
+---
+
+## 4) Target Resolution
+
+For each event, look up the target zone base (and subtype if applicable):
+
+| Base / Subtype                                | Selected source (target = `Selected[0]`) | All zone used for `target_position` |
+|-----------------------------------------------|-------------------------------------------|--------------------------------------|
+| `BuyShopItem/buyvoucher`                      | `VoucherShopOfferingsSelected`            | `VoucherShopOfferings`               |
+| `BuyShopItem/buyandopenplanetstandardbuffoonpack` | `PackShopOfferingsSelected`           | `PackShopOfferings`                  |
+| `BuyShopItem/buyandopentarotspectralpack`     | `PackShopOfferingsSelected`               | `PackShopOfferings`                  |
+| `BuyShopItem/buytopshelfjoker`                | `TopShelfShopOfferingsSelected`           | `TopShelfShopOfferings`              |
+| `BuyShopItem/buytopshelfconsumable`           | `TopShelfShopOfferingsSelected`           | `TopShelfShopOfferings`              |
+| `SelectPackItem/*`                            | `PackOfferingsSelected`                   | `PackOfferings`                      |
+| `SellItem/selljoker`                          | `CurrentJokersSelected`                   | `CurrentJokers`                      |
+| `SellItem/sellconsumable`                     | `CurrentConsumablesSelected`              | `CurrentConsumables`                 |
+| `BuyAndUseShopConsumable`                     | `TopShelfShopOfferingsSelected`           | `TopShelfShopOfferings`              |
+| `UseConsumable`                               | `CurrentConsumablesSelected`              | `CurrentConsumables`                 |
+
+`target_position` = position of the target object's `slot_id` in the
+matching All zone. If the All-zone lookup fails (data inconsistency),
+`target_zone` is preserved but `target_position` is null and the action
+label degrades to bare (handled downstream as an unresolved label).
+
+`SelectBlind`, `SkipBlind`, `RerollBossBlind`, `RerollShop`,
+`DiscardHand`, `PlayHand`, `CashOut`, `LeaveShop`, `SkipPack`, and
+`StartNewRun` have no target object.
+
+---
+
+## 5) SelectCard Decomposition
+
+Triggered for parent events with at least one selected playing card:
+
+| Parent event                                  | Selected source        | Pool / target zone for SelectCard |
+|-----------------------------------------------|------------------------|------------------------------------|
+| `PlayHand`                                    | `CurrentHandSelected`  | `CurrentHand`                      |
+| `DiscardHand`                                 | `CurrentHandSelected`  | `CurrentHand`                      |
+| `UseConsumable` on `In_Blind`                 | `CurrentHandSelected`  | `CurrentHand`                      |
+| `UseConsumable` on `In_TarotSpectral_Pack`    | `TarotSpectralHandSelected` | `TarotSpectralHand`           |
+| `SelectPackItem/selectpackitemtarot`          | `TarotSpectralHandSelected` | `TarotSpectralHand`           |
+
+`UseConsumable` decomposes only when its target consumable's `class_id`
+is in `REQUIRES_AT_LEAST_ONE_CARD` (see `granularize.py`):
+
+```
+{249, 251, 252, 259, 263, 264, 298, 299, 300, 302, 304, 305,
+ 309, 310, 311, 312, 313, 314, 315, 317, 319}
+```
+
+Iteration order: selected cards sorted by `position_in_zone` within
+their Selected zone.
+
+Per micro-step:
+
+1. Find the target card's current position in the **dynamic** pool.
+2. Emit `SelectCard_<pool>_<pos>` with `target_zone=<pool>`,
+   `target_position=<pos>`, `source_kind="select"`.
+3. Snapshot `pending_cards` BEFORE adding this card; embed in `objects`
+   as `zone="PendingCards"`.
+4. Pop the target from the dynamic pool, append its key to
+   `pending_keys`.
+
+After all selects, emit the parent step with `source_kind="commit"`:
+the dynamic pool has all selected cards removed; `pending_cards`
+contains all selected cards. `pending_cards` is cleared between parent
+events (next event starts with an empty `PendingCards`).
+
+---
+
+## 6) SWAP Synthesis
+
+`SWAP` is the only synthesized base action. Generated before any event
+whose base is in:
+
+```
+{DiscardHand, PlayHand, UseConsumable, CashOut, SelectPackItem,
+ BuyAndUseShopConsumable, BuyShopItem, LeaveShop, SellItem}
+```
+
+Algorithm:
+
+1. Compare `last_jokers` (previous parent's `CurrentJokers` snapshot)
+   with the current event's `CurrentJokers`.
+2. Reconcile the set difference: only operate on jokers present in both.
+3. Greedy in-place transform of `current` into `target`:
+   ```python
+   for i in range(len(current)):
+       if current[i] != target[i]:
+           j = current.index(target[i], i + 1)
+           emit SWAP(i, j); current[i], current[j] = current[j], current[i]
+   ```
+4. For each emitted swap:
+   - Step copies the parent event's OCR and all populated zones, but
+     `CurrentJokers` is replaced by the snapshot taken IMMEDIATELY
+     BEFORE this swap is applied (so the model sees the state it would
+     need to act on to produce that swap).
+   - `action = "SWAP_i_j"`, `swap_pair = [i, j]`,
+     `source_kind = "swap_synth"`, no target.
+
+After all swaps for this event have been emitted, `last_jokers` is
+updated to the in-progress reordered list. Once the parent event itself
+is recorded, `last_jokers` is reset to the parent's `CurrentJokers`.
+
+Snapshot exclusions (events that do NOT update `last_jokers` and do NOT
+trigger swap comparison):
+
+```
+{StartNewRun, SkipBlind, SkipPack, RerollShop, RerollBossBlind, SelectCard}
 ```
 
 ---
 
-## 8) Open Items from Source Spec
+## 7) Emission Ordering and `step_id`
 
-- `SWAP` is specified but marked as needing implementation integration.
-- `SelectPackItem` still contains deprecated wording around overloaded zones.
-- Shop-usable tarot list has a truncated line in source (`THE H`); treat as unresolved TODO until clarified.
+Within a parsed event:
 
+```
+SWAP_synth_steps (micro_index = -K .. -1)
+SelectCard_steps  (micro_index =  0 .. K)
+parent_step       (micro_index =  K) - "commit" or "pass_through"
+```
+
+Across the run, all emitted steps receive a monotonic `step_id`
+starting at 0. Negative `micro_index` values for `swap_synth` are
+preserved purely as metadata and do not affect ordering since the SWAP
+steps are emitted into the output list before their parent.
+
+---
+
+## 8) Action Label Format
+
+| Family group                | Label format                              | Example                                   |
+|-----------------------------|-------------------------------------------|-------------------------------------------|
+| Bare (no target)            | `Base`                                    | `PlayHand`, `LeaveShop`, `StartNewRun`    |
+| Per-zone indexed            | `Base_Zone_i`                             | `BuyShopItem_VoucherShopOfferings_0`      |
+| Pair-indexed                | `SWAP_i_j` (i < j over `CurrentJokers`)   | `SWAP_0_1`                                |
+
+The per-zone subfamilies are exactly those listed in
+`action_space_schema.md` and `data/action_map.json`. The integer index
+`i` is identical to `target_position` (or to `swap_pair` indices), so
+downstream consumers can use the structured fields without re-parsing
+the action string.
