@@ -2,7 +2,7 @@
 
 **Status:** This approach has been abandoned — see [Going Forward](#going-forward).
 
-This repository archives a **factorized hierarchical policy transformer** trained to imitate expert Balatro play. The model chooses from a decomposed action space of 100+ actions, with labels like `SELECT_CARD_1`, `BUY_SHOP_ITEM_4`, and `SKIP_BLIND`.
+This repository archives a **factorized hierarchical policy transformer** trained to imitate expert Balatro play. The model first picks an action family (e.g. `PlayHand`, `BuyShopItem`, `SkipBlind`), then predicts arguments like which cards or shop slot.
 
 ```mermaid
 flowchart LR
@@ -26,11 +26,9 @@ flowchart LR
   F --> A
 ```
 
-Families are predicted first; argument heads then fill in pointers (cards, shop slots, jokers, …) only for the chosen family — similar in spirit to factorized game agents, and similarly fragile over long horizons.
-
 ## Performance
 
-- The model chose the correct action from an expert demonstration with 71% accuracy, and contained the correct decision within its top-3 actions 90% of the time, which was promising. However, in practice it performed very poorly, unable to pass the first blind with consistency.
+- The model chose the correct action from an expert demonstration with 74% accuracy, and contained the correct decision within its top-3 actions 93% of the time, which was promising. However, in practice it performed very poorly, unable to pass the first blind with consistency.
 - As it turns out, a decomposed action space leads to compounding errors, which is detrimental to long-run performance even over the course of a few actions.
 - Furthermore, actions that are underrepresented (like `SELL_JOKER_9`) and that do not have strong corresponding signals will not be chosen by the model, despite using techniques like DAgger and logit adjustment.
 
@@ -46,7 +44,7 @@ Supporting offline metrics and dataset reports are under [`results/`](results/).
 - In order to create an agent that is capable of playing an incomplete-information, stochastic, reasoning-heavy game, we need to use a very different approach.
 - Instead of having a model make decisions directly, we train state estimators based on expert demonstration and simulate the results of high-level actions.
 - Based on the results of several simulations and value estimates of each one, we can determine an "optimal" path and avoid the pitfalls of compounding error.
-- The downside is that this requires a very hardware-conscious simulator, which does not exist for Balatro. I am working on this.
+- The downside is that this requires a very hardware-friendly simulator, which does not exist for Balatro. I am working on this.
 
 ## What's in this repo
 
