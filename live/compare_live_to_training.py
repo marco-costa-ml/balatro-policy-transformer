@@ -125,6 +125,10 @@ def main():
         t = train_hist.get(k, 0)
         flag = "  " if l == t else " *"
         print(f"{flag} {str(k):<46} {l:>6} {t:>6}")
+    live_pack = sum(v for (zone, _), v in live_hist.items() if zone == "PackOfferings")
+    train_pack = sum(v for (zone, _), v in train_hist.items() if zone == "PackOfferings")
+    if args.page == "In_TarotSpectral_Pack":
+        print(f"\nPackOfferings parity: live={live_pack} train={train_pack}")
     print()
 
     print("--- OCR field presence ---")
@@ -171,6 +175,12 @@ def main():
 
     rec_live = tensorize_step(live_step, live_pstate, amap, vocab, norm, feat)
     rec_train = tensorize_step(train_step, train_pstate, amap, vocab, norm, feat)
+
+    print("--- History tensor contract ---")
+    print(f"history_step_mask shape:   {rec_live['history_step_mask'].shape}")
+    print(f"history_object_mask shape: {rec_live['history_object_mask'].shape}")
+    print(f"fresh live comparison history populated: {bool(rec_live['history_step_mask'].any())}")
+    print()
 
     print("--- Tensor diff ---")
     print(f"{'channel':<32} {'shape':<14} {'identical':<10} {'first-mismatch'}")

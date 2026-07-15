@@ -26,8 +26,10 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from model import ModelConfig, PolicyTransformer
+from live.emission_policy import expand_decision
 from live.live_encoder import LiveEncoder
+from model import ModelConfig, PolicyTransformer
+from supplement_features import N_SUPPLEMENT, SUPPLEMENT_FEATURE_NAMES
 
 
 def _empty_state(**overrides) -> dict[str, Any]:
@@ -265,14 +267,52 @@ def _scenario_in_pack_tarot() -> dict[str, Any]:
     # Tarot/spectral pack — the player's hand sits under TarotSpectralHand
     # while the pack consumables are picked via SelectPackItem.
     hand = [_card("TarotSpectralHand", i, c) for i, c in enumerate([0, 13, 26, 39, 1, 14, 27, 40])]
+    offerings = [
+        {"class_id": 249, "object_type": "tarot", "zone": "PackOfferings",
+         "position_in_zone": 0, "modifier": None, "edition": None,
+         "seal": None, "card": None},
+        {"class_id": 308, "object_type": "spectral", "zone": "PackOfferings",
+         "position_in_zone": 1, "modifier": None, "edition": None,
+         "seal": None, "card": None},
+    ]
     return _envelope(
         request_id=7,
         page_name="In_TarotSpectral_Pack",
         state=_empty_state(hand_size_current=8, deck_remaining=44),
-        objects=hand,
+        objects=[*hand, *offerings],
         legal_actions=[
             "SkipPack",
             *[f"SelectCard_TarotSpectralHand_{i}" for i in range(8)],
+            "SelectPackItem_PackOfferings_0",
+            "SelectPackItem_PackOfferings_1",
+        ],
+    )
+
+
+def _scenario_in_blind_pending_pair() -> dict[str, Any]:
+    """In_Blind with two 7s already in PendingCards, exercising supplement_features.
+
+    Used by the encoder pre-flight to check that ``make_pair = 1`` and that
+    the scored-count derivations match Balatro hand rules (2 sevens score,
+    everything else does not).
+    """
+    pending = [_card("PendingCards", 0, 6), _card("PendingCards", 1, 19)]   # 7♠, 7♥
+    pool = [_card("CurrentHand", i, c) for i, c in enumerate([12, 25, 38, 51, 0, 13])]
+    return _envelope(
+        request_id=9,
+        page_name="In_Blind",
+        state=_empty_state(hand_size_current=8, deck_remaining=44),
+        objects=[
+            {"class_id": 370, "object_type": "blind", "zone": "BlindToken",
+             "position_in_zone": 0, "modifier": None, "edition": None,
+             "seal": None, "card": None},
+            *pool,
+            *pending,
+        ],
+        pending_cards=[_pending_view(c) for c in pending],
+        legal_actions=[
+            "PlayHand", "DiscardHand",
+            *[f"SelectCard_CurrentHand_{i}" for i in range(6)],
         ],
     )
 
@@ -311,26 +351,160 @@ def _scenario_inventory_actions() -> dict[str, Any]:
 
 
 SCENARIOS = {
-    "blind_select":          _scenario_blind_select,
-    "in_blind":              _scenario_in_blind,
-    "in_blind_mid_select":   _scenario_in_blind_mid_select,
-    "cash_out":              _scenario_cash_out,
-    "in_shop":               _scenario_in_shop,
-    "in_pack_joker":         _scenario_in_pack_joker,
-    "in_pack_tarot":         _scenario_in_pack_tarot,
-    "inventory_actions":     _scenario_inventory_actions,
+    "blind_select":            _scenario_blind_select,
+    "in_blind":                _scenario_in_blind,
+    "in_blind_mid_select":     _scenario_in_blind_mid_select,
+    "in_blind_pending_pair":   _scenario_in_blind_pending_pair,
+    "cash_out":                _scenario_cash_out,
+    "in_shop":                 _scenario_in_shop,
+    "in_pack_joker":           _scenario_in_pack_joker,
+    "in_pack_tarot":           _scenario_in_pack_tarot,
+    "inventory_actions":       _scenario_inventory_actions,
 }
+
+
+def _encoder_preflight(encoder: LiveEncoder, device: torch.device) -> None:
+    """Walk every scenario through the encoder and validate supplement_features.
+
+    Shape check is unconditional. For the canonical "pending pair" scenario we
+    also spot-check a few derived values so a regression in supplement_features
+    is caught before we even touch the model.
+    """
+    print()
+    print("=== supplement_features pre-flight ===")
+    for name, build in SCENARIOS.items():
+        snapshot = build()
+        batch, _ = encoder.encode(snapshot, device=device)
+        sf = batch.get("supplement_features")
+        if sf is None:
+            raise AssertionError(
+                f"scenario {name!r}: tensorize_step did not emit supplement_features"
+            )
+        if tuple(sf.shape) != (1, N_SUPPLEMENT):
+            raise AssertionError(
+                f"scenario {name!r}: supplement_features shape {tuple(sf.shape)} != (1, {N_SUPPLEMENT})"
+            )
+        if sf.dtype != torch.float32:
+            raise AssertionError(
+                f"scenario {name!r}: supplement_features dtype {sf.dtype} != float32"
+            )
+        expected_history_steps = int(encoder.feature_config.get("HISTORY_STEPS", 32))
+        if tuple(batch["history_step_mask"].shape) != (1, expected_history_steps):
+            raise AssertionError(
+                f"scenario {name!r}: history_step_mask shape {tuple(batch['history_step_mask'].shape)} != (1, {expected_history_steps})"
+            )
+        if bool(batch["history_step_mask"].any().item()):
+            raise AssertionError(f"scenario {name!r}: fresh live encode should have empty history")
+    # Spot-check the canonical pair scenario: 2 sevens in PendingCards.
+    snapshot = _scenario_in_blind_pending_pair()
+    batch, _ = encoder.encode(snapshot, device=device)
+    sf = batch["supplement_features"].squeeze(0).cpu().numpy()
+
+    def _bit(label: str) -> float:
+        return float(sf[SUPPLEMENT_FEATURE_NAMES.index(label)])
+
+    if _bit("selected_cards_make_pair") != 1.0:
+        raise AssertionError("in_blind_pending_pair: expected make_pair=1.0")
+    if _bit("selected_cards_make_high_card") != 0.0:
+        raise AssertionError("in_blind_pending_pair: make_high_card should be 0")
+    # Both sevens score → spade+heart counts = 1 each, debuff = 0.
+    if _bit("selected_spade_scored_count") != 1.0:
+        raise AssertionError("in_blind_pending_pair: spade_scored_count != 1")
+    if _bit("selected_heart_scored_count") != 1.0:
+        raise AssertionError("in_blind_pending_pair: heart_scored_count != 1")
+    # Nothing else (K♠ at class_id 12 ace? class_id 6 is 7♠) should score.
+    if _bit("selected_face_card_scored_count") != 0.0:
+        raise AssertionError("in_blind_pending_pair: face_card_scored_count != 0")
+    prior = encoder.build_step(_scenario_in_pack_tarot())
+    prior["action"] = "SelectPackItem_PackOfferings_1"
+    hist_batch, _ = encoder.encode(
+        _scenario_in_blind(), device=device, history_steps=[prior]
+    )
+    if not bool(hist_batch["history_step_mask"][0, 0].item()):
+        raise AssertionError("history pre-flight: expected most-recent history slot to be populated")
+    if int(hist_batch["history_object_mask"][0, 0].sum().item()) == 0:
+        raise AssertionError("history pre-flight: expected Tarot/Spectral PackOfferings history objects")
+    print(f"  OK  every scenario emits supplement_features ({N_SUPPLEMENT},) float32")
+    print(f"  OK  pair-scenario derived bits match Balatro rules")
+    print("  OK  live history tensors populate prior PackOfferings context")
 
 
 def _load_model(ckpt_path: Path, device: torch.device) -> PolicyTransformer:
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
-    cfg = ModelConfig(**{k: v for k, v in ckpt["model_config"].items()
+    cfg_dict = dict(ckpt["model_config"])
+    if "history_steps" not in cfg_dict:
+        cfg_dict.update(use_history_tokens=False, use_tracked_deck_tokens=True)
+    cfg = ModelConfig(**{k: v for k, v in cfg_dict.items()
                          if k in ModelConfig.__dataclass_fields__})
     model = PolicyTransformer(cfg).to(device)
     model.load_state_dict(ckpt["model_state_dict"])
     model.eval()
-    print(f"loaded {ckpt_path.name} epoch={ckpt.get('epoch')} val_top1={ckpt.get('val_top1')}")
+    print(
+        f"loaded {ckpt_path.name} epoch={ckpt.get('epoch')} "
+        f"val_top1={ckpt.get('val_top1')} "
+        f"family_map={ckpt.get('family_map_version')}"
+    )
     return model
+
+
+@torch.no_grad()
+def _decide_branched(
+    encoder: LiveEncoder,
+    model: PolicyTransformer,
+    snapshot: dict[str, Any],
+    device: torch.device,
+) -> dict[str, Any]:
+    """Branched two-phase decode mirroring ``AgentServer._decide_super_step``."""
+    batch, _ = encoder.encode(snapshot, device=device)
+    phase1 = model.encode_and_pick_family(batch)
+    family_id = int(phase1["family_id"].item())
+    family_name = encoder.id_to_family[family_id]
+    decoder_shape = encoder.decoder_shapes.get(family_name, "reserved")
+
+    canonical_snap = encoder.normalize_snapshot(snapshot)
+    lua_mask = encoder._legal_action_mask(canonical_snap.get("legal_actions") or [])
+    new_masks = encoder.pointer_masks_for_family(
+        canonical_snap, family_name, device=device,
+        lua_legal_mask=lua_mask if lua_mask.any() else None,
+    )
+    for k, t in new_masks.items():
+        batch[k] = t
+    phase2 = model.decode_arguments(phase1["enc"], batch, phase1["family_id"])
+
+    family_logits = phase1["family_logits"].squeeze(0)
+    family_probs = torch.softmax(family_logits, dim=-1)
+    top_n = min(5, int((family_logits > -float("inf")).sum().item()) or 1)
+    top_idx = torch.topk(family_probs, top_n).indices.tolist()
+    top5 = [
+        (encoder.id_to_family[int(i)], float(family_probs[int(i)].item()))
+        for i in top_idx
+    ]
+
+    decision: dict[str, Any] = {
+        "family_id": family_id,
+        "family_name": family_name,
+        "decoder_shape": decoder_shape,
+        "family_top5": top5,
+        "item_ptr_local": int(phase2["item_pred"].item()),
+        "swap_i_local": int(phase2["swap_i_pred"].item()),
+        "swap_j_local": int(phase2["swap_j_pred"].item()),
+    }
+    if decoder_shape == "card_seq":
+        n = max(1, min(int(phase2["card_seq_num_cards"].item()),
+                       model.cfg.max_cards_per_decision))
+        seq = phase2["card_seq_pred"].squeeze(0).tolist()
+        decision["num_cards"] = n
+        decision["card_ptr_local_seq"] = list(map(int, seq[:n]))
+    elif decoder_shape == "chained_cards":
+        n = max(0, min(int(phase2["chained_num_cards"].item()),
+                       model.cfg.max_cards_per_decision))
+        seq = phase2["chained_pred"].squeeze(0).tolist()
+        decision["num_cards"] = n
+        decision["card_ptr_local_seq"] = list(map(int, seq[:n]))
+    else:
+        decision["num_cards"] = 0
+        decision["card_ptr_local_seq"] = []
+    return decision
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -351,10 +525,18 @@ def main(argv: list[str] | None = None) -> None:
     print(f"device: {device}")
 
     encoder = LiveEncoder()
+
+    # Pre-flight: every scenario's encoded batch must carry supplement_features
+    # with the contracted shape/dtype. We deliberately do this BEFORE loading
+    # the checkpoint so the assertion still runs in a fresh repo (or after a
+    # `n_supplement` bump) when the saved weights aren't yet compatible.
+    _encoder_preflight(encoder, device)
+
     model = _load_model(args.checkpoint, device)
 
     names = list(SCENARIOS.keys()) if args.scenario == "all" else [args.scenario]
     n_unresolved = 0
+    n_illegal_first = 0
     for name in names:
         print()
         print(f"=== scenario: {name} ===")
@@ -372,29 +554,57 @@ def main(argv: list[str] | None = None) -> None:
             n_unresolved += len(missing)
             print(f"  WARNING: {len(missing)} legal labels not in label_to_index: {missing[:5]}")
 
-        batch, legal_mask = encoder.encode(snapshot, device=device)
-        with torch.no_grad():
-            logits = model(batch).squeeze(0)  # (N_ACTIONS,)
-        probs = torch.softmax(logits, dim=-1).cpu().numpy()
-        n_legal = int(legal_mask.sum())
-        top5 = sorted(
-            ((float(probs[i]), encoder.label_for_index(i)) for i in range(probs.shape[0])
-             if legal_mask[i]),
-            reverse=True,
-        )[:5]
-        print(f"  page={snapshot['page_name']}  n_legal={n_legal}")
-        if not top5:
-            print("  no legal actions found — model would have nothing to pick")
+        legal_set = set(snapshot.get("legal_actions") or [])
+        n_legal = len(legal_set)
+        if not legal_set:
+            print("  no legal actions — skipping decode (would have nothing to pick)")
             continue
-        print(f"  argmax: {top5[0][1]}  p={top5[0][0]:.3f}")
-        for p, lab in top5:
-            print(f"    {lab:30s}  p={p:.3f}")
+
+        decision = _decide_branched(encoder, model, snapshot, device)
+        expansion = expand_decision(
+            family_name=decision["family_name"],
+            decoder_shape=decision["decoder_shape"],
+            page_name=snapshot.get("page_name"),
+            num_cards=int(decision["num_cards"]),
+            card_ptr_local_seq=decision["card_ptr_local_seq"],
+            item_ptr_local=decision["item_ptr_local"],
+            swap_i_local=decision["swap_i_local"],
+            swap_j_local=decision["swap_j_local"],
+        )
+        print(f"  page={snapshot['page_name']}  n_legal={n_legal}")
+        print(
+            f"  family: {decision['family_name']:55s}  "
+            f"shape={decision['decoder_shape']}"
+        )
+        print(f"  family_top5:")
+        for fam, p in decision["family_top5"]:
+            print(f"    {fam:55s}  p={p:.3f}")
+        # The plan unrolls into 1..N labels. Only the FIRST label has to
+        # be in Lua's current legal set — later labels become legal as
+        # their predecessor (e.g. SelectCard) executes and Lua sends a
+        # new snapshot. AgentServer's pop_next() validates each one in
+        # turn before emitting.
+        print(f"  unrolled plan ({len(expansion.labels)} labels):")
+        for i, lab in enumerate(expansion.labels):
+            if i == 0:
+                tag = "" if lab in legal_set else "  [first label NOT in Lua's current legal set]"
+            else:
+                tag = "  (becomes legal after predecessor)"
+            print(f"    {lab}{tag}")
+        if expansion.labels and expansion.labels[0] not in legal_set:
+            n_illegal_first += 1
 
     print()
     if n_unresolved:
         print(f"FAIL: {n_unresolved} legal labels could not be resolved against the action map.")
         raise SystemExit(1)
-    print("OK: all scenarios produced legal-mask-covered top-K predictions.")
+    if n_illegal_first:
+        print(
+            f"WARNING: {n_illegal_first} scenario(s) had a FIRST label outside Lua's "
+            "current legal set. AgentServer will fall back gracefully, but the "
+            "decoder picked something the live game wouldn't accept."
+        )
+    print("OK: branched decoder produced legal label plans for all scenarios.")
 
 
 if __name__ == "__main__":

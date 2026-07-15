@@ -1,0 +1,41 @@
+# Local / IDE
+.cursor/
+.vscode/
+balatro-policy-transformer.code-workspace
+desktop.ini
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+venv/
+
+# Commercial game source — never commit
+Balatro/
+
+# Pipeline run dumps (keep locally; do not upload)
+data/extracted/
+data/granularized/
+data/parsed/
+data/persistent_state/
+data/tensorized/
+data_export/
+
+# Model weights and checkpoint trees
+artifacts/checkpoints/
+artifacts/checkpoints_smoke/
+*.pt
+*.pth
+
+# Regenerable artifact noise
+artifacts/figures/
+artifacts/tables/
+artifacts/train_run.log
+artifacts/training_snapshot_samples/
+artifacts/incomplete_blinds_report.json

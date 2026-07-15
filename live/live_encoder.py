@@ -58,7 +58,14 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from action_map import compute_action_map
-from tensorize import Normalizer, VocabLookup, tensorize_step
+from family_map import compute_family_map
+from mask_builder import (
+    build_action_mask,
+    build_card_pointer_mask,
+    build_item_pointer_mask,
+    build_swap_joker_mask,
+)
+from tensorize import Normalizer, VocabLookup, derive_branched_caps, tensorize_step
 
 
 # Page → canonical pool zone for the playing-card hand at this state. The
@@ -208,6 +215,16 @@ class LiveEncoder:
         self.label_to_index: dict[str, int] = self.action_map["label_to_index"]
         self.index_to_label: list[str] = self.action_map["index_to_label"]
         self.n_actions: int = int(self.action_map["n_actions"])
+        # Branched-policy artifacts: family_map (id ↔ name + decoder shapes)
+        # and derived per-family pointer-zone capacities. We build the
+        # family map in-process from action_map so the encoder is always
+        # in sync with the live action space — no need to load a separate
+        # artifact JSON.
+        self.family_map = compute_family_map(self.action_map)
+        self.branched_caps = derive_branched_caps(self.action_map, self.family_map)
+        self.id_to_family: list[str] = list(self.family_map["id_to_family"])
+        self.family_to_id: dict[str, int] = dict(self.family_map["family_to_id"])
+        self.decoder_shapes: dict[str, str] = dict(self.family_map["decoder_shapes"])
         # Single-shot diagnostic toggle so the agent_server doesn't log
         # "legacy snapshot" on every frame after a Lua build skew.
         self.legacy_snapshot_seen: bool = False
@@ -221,7 +238,7 @@ class LiveEncoder:
         self.legacy_snapshot_seen = True
         return _normalize_legacy_snapshot(snapshot)
 
-    def _build_step(self, snapshot: dict[str, Any]) -> dict[str, Any]:
+    def build_step(self, snapshot: dict[str, Any]) -> dict[str, Any]:
         """Project a snapshot's top level into the dict tensorize_step expects."""
         return {
             "page_name": snapshot.get("page_name"),
@@ -247,20 +264,33 @@ class LiveEncoder:
         return mask
 
     def encode(
-        self, snapshot: dict[str, Any], device: torch.device | None = None
+        self,
+        snapshot: dict[str, Any],
+        device: torch.device | None = None,
+        history_steps: list[dict[str, Any]] | None = None,
     ) -> tuple[dict[str, torch.Tensor], np.ndarray]:
         """Encode one snapshot into a (batch_dict, action_mask_np) pair.
 
         ``batch_dict`` has every key the model expects, with batch dim 1.
-        ``action_mask_np`` is the same mask but kept as numpy for diagnostics.
+        Pointer masks (``item_pointer_mask`` / ``card_pointer_mask`` /
+        ``swap_joker_mask``) are zero-filled because the family is not
+        known yet; the agent recomputes them via
+        :meth:`pointer_masks_for_family` once the family head has fired.
+
+        ``action_mask_np`` is the Lua-reported legality mask kept as
+        numpy for diagnostics / fallback.
         """
         snapshot = self.normalize_snapshot(snapshot)
-        step = self._build_step(snapshot)
+        step = self.build_step(snapshot)
         pstate = snapshot.get("persistent_state") or {}
 
         # Reuse the canonical tensorizer; it ignores `action_subtype_id` /
         # `source_kind_id` at model-input time (LeakageNote in model.py) so
-        # null entries are fine.
+        # null entries are fine. Passing the family_map causes
+        # tensorize_step to emit the branched-policy channels
+        # (family_mask, item_pointer_mask, card_pointer_mask,
+        # swap_joker_mask, family_id, etc.); the pointer masks come back
+        # all-False because ``family_name_for_pointer`` is None.
         record = tensorize_step(
             step=step,
             persistent_state=pstate,
@@ -268,6 +298,10 @@ class LiveEncoder:
             vocab=self.vocab,
             norm=self.normalizer,
             feature_config=self.feature_config,
+            history_steps=history_steps or [],
+            family_map=self.family_map,
+            branched_caps=self.branched_caps,
+            family_name_for_pointer=None,
         )
 
         # Override the auto-derived action mask with the Lua ground-truth
@@ -289,6 +323,64 @@ class LiveEncoder:
                 t = t.to(device)
             batch[key] = t
         return batch, legal_mask
+
+    def pointer_masks_for_family(
+        self,
+        snapshot: dict[str, Any],
+        family_name: str,
+        device: torch.device | None = None,
+        lua_legal_mask: np.ndarray | None = None,
+    ) -> dict[str, torch.Tensor]:
+        """Compute item / card / swap pointer masks for ``family_name``.
+
+        Used by the live agent after the family head has selected a
+        family — the encoder pass above filled these with zeros because
+        the family wasn't known yet. ``snapshot`` should be in canonical
+        ``live/2.0.0`` shape (call :meth:`normalize_snapshot` first).
+
+        ``lua_legal_mask`` should be the Lua-emitted flat legality mask;
+        we intersect with it so a buggy mask_builder rule cannot widen
+        the set of legal arguments past what the game accepts. Pass
+        ``None`` to skip this defensive AND.
+        """
+        step = self.build_step(snapshot)
+        caps = self.branched_caps
+        if lua_legal_mask is not None:
+            flat_mask = lua_legal_mask.astype(bool)
+        else:
+            flat_mask = build_action_mask(step, self.action_map).astype(bool)
+        item_mask = build_item_pointer_mask(
+            family_name,
+            step,
+            self.action_map,
+            max_size=int(caps["MAX_ITEM_ZONE_SIZE"]),
+            flat_mask=flat_mask,
+        )
+        card_mask = build_card_pointer_mask(
+            family_name,
+            step,
+            self.action_map,
+            max_size=int(caps["MAX_CARD_ZONE_SIZE"]),
+            flat_mask=flat_mask,
+        )
+        if family_name == "SWAP":
+            swap_mask = build_swap_joker_mask(
+                step, max_joker_slots=int(caps["MAX_JOKER_SLOTS"])
+            )
+        else:
+            swap_mask = np.zeros(int(caps["MAX_JOKER_SLOTS"]), dtype=bool)
+
+        def to_torch(arr: np.ndarray) -> torch.Tensor:
+            t = torch.from_numpy(np.asarray(arr)).unsqueeze(0)
+            if device is not None:
+                t = t.to(device)
+            return t
+
+        return {
+            "item_pointer_mask": to_torch(item_mask),
+            "card_pointer_mask": to_torch(card_mask),
+            "swap_joker_mask": to_torch(swap_mask),
+        }
 
     def label_for_index(self, idx: int) -> str:
         if 0 <= idx < len(self.index_to_label):

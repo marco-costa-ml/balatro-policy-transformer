@@ -19,6 +19,9 @@ Granularization is a single-pass per-run transform that follows
   micro-steps followed by a commit step. ``UseConsumable`` and
   ``SelectPackItem`` decompose only when the target requires card
   selection (REQUIRES_AT_LEAST_ONE_CARD set / ``selectpackitemtarot``).
+- Selected-card sets are emitted in a deterministic pseudo-random order,
+  because parsed snapshots do not preserve the real click order and sorting
+  selected cards left-to-right creates a spurious supervised sequence.
 - A script-local ``PendingCards`` zone holds cards selected so far in
   the current parent sequence. Every emitted step records its current
   ``pending_cards`` snapshot (also represented as objects with
@@ -41,6 +44,19 @@ Output step schema:
 
 Usage:
     python granularize.py [--src data/parsed] [--dst data/granularized]
+                             [--min-actions N] [--workers K]
+
+Run files are processed in parallel by default (``ProcessPoolExecutor``, 6
+workers). Each worker granularizes one parsed ``run_*.json`` and writes the
+output JSON. Use ``--workers 1`` to force a single-threaded pass.
+
+Skipping short runs:
+
+    Parsed runs are lists of recorded player ``events``. When
+    ``--min-actions`` is a positive integer (default 10), any run whose
+    ``len(events)`` is strictly less than that value is omitted from the
+    output — no granularized JSON is written for that ``run_*`` file.
+    Pass ``--min-actions 0`` to disable this filter (process every run).
 """
 
 from __future__ import annotations
@@ -48,8 +64,10 @@ from __future__ import annotations
 import argparse
 import collections
 import copy
+import hashlib
 import json
 import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -58,7 +76,7 @@ from typing import Any
 # Schema constants
 # ---------------------------------------------------------------------------
 
-GRANULARIZE_SCHEMA_VERSION = "3.0.0"
+GRANULARIZE_SCHEMA_VERSION = "3.0.1"
 
 # Consumable class ids that require at least one playing card to be
 # selected. Triggers conditional UseConsumable / SelectPackItem decomposition.
@@ -436,6 +454,36 @@ def _slot_key(obj: dict[str, Any]) -> Any:
     )
 
 
+def _selected_card_scramble_key(
+    obj: dict[str, Any],
+    *,
+    source_event_index: int,
+    base_action: str,
+    subtype: str | None,
+) -> tuple[str, int, int]:
+    """Deterministic pseudo-random order key for decomposed card selects.
+
+    Parsed snapshots tell us which cards are selected, but not the real click
+    order. Sorting by selected-zone position creates an artificial left-to-right
+    training target that the autoregressive card decoder overfits. Hashing the
+    event identity plus card identity preserves reproducibility while removing
+    that positional ordering bias before the data reaches tensorization.
+    """
+    payload = {
+        "source_event_index": source_event_index,
+        "base_action": base_action,
+        "subtype": subtype or "",
+        "slot_key": _slot_key(obj),
+    }
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    digest = hashlib.sha256(blob.encode("utf-8")).hexdigest()
+    return (
+        digest,
+        int(obj.get("position_in_zone") or 0),
+        int(obj.get("slot_id") or 0),
+    )
+
+
 def compute_swap_pairs(
     last_jokers: list[dict[str, Any]],
     curr_jokers: list[dict[str, Any]],
@@ -676,11 +724,15 @@ def _emit_decomposed_event(
     dynamic_pool_keys: list[Any] = [_slot_key(o) for o in pool_list]
     pending_keys: list[Any] = []
 
-    # Selected-card iteration order: position in the Selected zone.
+    # Parsed snapshots only expose the selected *set*, not the real click
+    # order. Use a deterministic scramble so AR card targets do not encode a
+    # fake left-to-right order.
     selected_cards_full.sort(
-        key=lambda o: (
-            int(o.get("position_in_zone") or 0),
-            int(o.get("slot_id") or 0),
+        key=lambda o: _selected_card_scramble_key(
+            o,
+            source_event_index=source_event_index,
+            base_action=base_action,
+            subtype=subtype,
         )
     )
 
@@ -895,22 +947,60 @@ def find_runs(src_root: Path) -> list[tuple[str, int, Path]]:
 
 
 def write_run(run: dict[str, Any], dst_dir: Path) -> None:
+    """Write granularized JSON. No stdout — parent prints summaries in stable order."""
     dst_dir.mkdir(parents=True, exist_ok=True)
     out = dst_dir / ("run_%03d.json" % run["run_index"])
     out.write_text(
         json.dumps(run, indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    print(
-        "    run_%03d.json  (%d granular steps)"
-        % (run["run_index"], len(run["events"]))
-    )
 
 
-def write_config(dst_root: Path, src_root: Path, stats: collections.Counter) -> None:
+def _granularize_job(
+    run_path: Path, dst_root: Path, min_actions: int
+) -> tuple[str, int, int, bool, int, dict[tuple[str, str], int]]:
+    """Granularize one parsed run → JSON on disk. Kept module-level for multiprocessing."""
+    video_id = run_path.parent.name.split("=", 1)[1]
+    run_idx = int(run_path.stem.split("_", 1)[1])
+
+    run = json.loads(run_path.read_text(encoding="utf-8"))
+    n_parsed = len(run.get("events") or [])
+
+    if min_actions > 0 and n_parsed < min_actions:
+        return (
+            video_id,
+            run_idx,
+            n_parsed,
+            True,
+            0,
+            {("skipped", "too_few_parsed_actions"): 1},
+        )
+
+    granular = granularize_run(run)
+    local: collections.Counter = collections.Counter()
+    local[("run", "granularized")] += 1
+    for s in granular["events"]:
+        local[("source_kind", s.get("source_kind") or "")] += 1
+        local[("base", s.get("action", "").split("_", 1)[0])] += 1
+
+    dst_dir = dst_root / f"video_id={video_id}"
+    write_run(granular, dst_dir)
+    return video_id, run_idx, n_parsed, False, len(granular["events"]), dict(local)
+
+
+def write_config(
+    dst_root: Path,
+    src_root: Path,
+    stats: collections.Counter,
+    *,
+    min_actions: int,
+    workers: int,
+) -> None:
     config = {
         "schema_version": GRANULARIZE_SCHEMA_VERSION,
         "source_directory": src_root.as_posix(),
         "output_directory": dst_root.as_posix(),
+        "min_actions": min_actions,
+        "workers": workers,
         "partition_format": "video_id={video_id}",
         "file_name": "run_{index:03d}.json",
         "zone_normalization": {
@@ -922,6 +1012,10 @@ def write_config(dst_root: Path, src_root: Path, stats: collections.Counter) -> 
             "Bare base for no-target families (e.g. PlayHand). "
             "Per-zone indexed `Base_Zone_i` for indexed families. "
             "Pair-indexed `SWAP_i_j` for joker swaps."
+        ),
+        "selected_card_order": (
+            "deterministic hash scramble over event identity and card identity; "
+            "parsed snapshots expose the selected set but not original click order"
         ),
         "step_fields": {
             "step_id": "int",
@@ -963,7 +1057,30 @@ def main(argv: list[str] | None = None) -> None:
     )
     ap.add_argument("--src", type=Path, default=Path("data/parsed"))
     ap.add_argument("--dst", type=Path, default=Path("data/granularized"))
+    ap.add_argument(
+        "--min-actions",
+        type=int,
+        default=10,
+        metavar="N",
+        help=(
+            "Skip runs with fewer than N parsed player events (length of "
+            "``events`` in each run JSON). Default: 10. Use 0 to disable."
+        ),
+    )
+    ap.add_argument(
+        "--workers",
+        type=int,
+        default=6,
+        metavar="K",
+        help=(
+            "Parallel worker processes. Default: 6. Use 1 for single-threaded."
+        ),
+    )
     args = ap.parse_args(argv)
+    if args.min_actions < 0:
+        ap.error("--min-actions must be >= 0")
+    if args.workers < 1:
+        ap.error("--workers must be >= 1")
 
     runs = find_runs(args.src)
     if not runs:
@@ -972,30 +1089,56 @@ def main(argv: list[str] | None = None) -> None:
 
     print(f"found {len(runs)} run file(s)\n")
 
+    dst_root = args.dst.resolve()
+    job_rows: list[tuple[str, int, int, bool, int, dict[tuple[str, str], int]]] = []
+
+    if args.workers == 1:
+        for video_id, run_idx, run_path in runs:
+            row = _granularize_job(run_path, dst_root, args.min_actions)
+            assert row[0] == video_id and row[1] == run_idx
+            job_rows.append(row)
+    else:
+        with ProcessPoolExecutor(max_workers=args.workers) as ex:
+            futures = {
+                ex.submit(_granularize_job, run_path, dst_root, args.min_actions): run_path
+                for _, _, run_path in runs
+            }
+            for fut in as_completed(futures):
+                job_rows.append(fut.result())
+
     stats: collections.Counter = collections.Counter()
+    for *_rest, shard in job_rows:
+        stats.update(shard)
+
+    job_rows.sort(key=lambda r: (r[0], r[1]))
+
     current_video: str | None = None
-    for video_id, run_idx, run_path in runs:
+    for video_id, run_idx, n_parsed, skipped_short, n_granular, _ in job_rows:
         if video_id != current_video:
             print(f"video_id={video_id}")
             current_video = video_id
-
-        with open(run_path, encoding="utf-8") as fh:
-            run = json.load(fh)
-
+        print(f"  run_{run_idx:03d}  ({n_parsed} parsed events)")
+        if skipped_short:
+            print(
+                f"           SKIP — need >= {args.min_actions} parsed actions "
+                f"(use --min-actions 0 to disable)"
+            )
+            continue
         print(
-            f"  run_{run_idx:03d}  ({len(run.get('events') or [])} parsed events)"
+            f"    run_{run_idx:03d}.json  ({n_granular} granular steps)"
         )
-        granular = granularize_run(run)
 
-        for s in granular["events"]:
-            stats[("source_kind", s.get("source_kind") or "")] += 1
-            stats[("base", s.get("action", "").split("_", 1)[0])] += 1
-
-        dst_dir = args.dst / f"video_id={video_id}"
-        write_run(granular, dst_dir)
-
-    write_config(args.dst, args.src, stats)
+    write_config(
+        args.dst, args.src, stats, min_actions=args.min_actions, workers=args.workers
+    )
     print()
+    sk = stats.get(("skipped", "too_few_parsed_actions"), 0)
+    if sk:
+        print(
+            f"skipped {sk} short run(s) "
+            f"(--min-actions {args.min_actions}; use --min-actions 0 to include all)"
+        )
+        print()
     print("--- source_kind counts ---")
     for (k1, k2), n in sorted(stats.items()):
         if k1 == "source_kind":

@@ -1,4 +1,4 @@
-return {
+{
     j_joker = {
         order = 1,
         unlocked = true,

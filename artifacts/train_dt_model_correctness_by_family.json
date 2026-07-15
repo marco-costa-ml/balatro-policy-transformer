@@ -1,0 +1,160 @@
+{
+  "split": "train",
+  "n_kept_steps": 129828,
+  "family_min_n_corr": 50,
+  "stake_class_id": 268,
+  "round_range_inclusive_lo": 1,
+  "round_exclusive_hi": 36,
+  "afk_cap_s": 90.0,
+  "excluded_base_actions": [
+    "SWAP",
+    "SelectCard"
+  ],
+  "checkpoint": "C:\\Users\\marco\\Desktop\\balatro-policy-transformer\\artifacts\\checkpoints\\best.pt",
+  "families": [
+    {
+      "family": "BuyShopItem",
+      "n": 29932,
+      "top1": 0.6415875985567285,
+      "top3": 0.9152412134170788,
+      "mean_dt_when_correct_s": 3.1673297229743804,
+      "mean_dt_when_wrong_s": 3.4165858811831966,
+      "pearson_r_dt_correct": -0.03775927333538198,
+      "pearson_p": 6.37205320094531e-11,
+      "spearman_rho_dt_correct": -0.02362644198107668,
+      "spearman_p": 4.351471839282238e-05
+    },
+    {
+      "family": "RerollShop",
+      "n": 23663,
+      "top1": 0.7703165279127753,
+      "top3": 0.9754046401555171,
+      "mean_dt_when_correct_s": 2.3468711140370124,
+      "mean_dt_when_wrong_s": 2.8833241337013185,
+      "pearson_r_dt_correct": -0.08149189756071083,
+      "pearson_p": 3.687494918731791e-36,
+      "spearman_rho_dt_correct": -0.140281645696345,
+      "spearman_p": 2.818814714901735e-104
+    },
+    {
+      "family": "CashOut",
+      "n": 12966,
+      "top1": 0.9896652784204844,
+      "top3": 0.9994601264846522,
+      "mean_dt_when_correct_s": 8.783668433083957,
+      "mean_dt_when_wrong_s": 12.327860696517414,
+      "pearson_r_dt_correct": -0.07488518909380248,
+      "pearson_p": 1.3630485545187087e-17,
+      "spearman_rho_dt_correct": -0.06804172844484797,
+      "spearman_p": 8.762153843735746e-15
+    },
+    {
+      "family": "SelectBlind",
+      "n": 12363,
+      "top1": 0.9874625899862493,
+      "top3": 1.0,
+      "mean_dt_when_correct_s": 1.5423383573612932,
+      "mean_dt_when_wrong_s": 1.852903225806452,
+      "pearson_r_dt_correct": -0.019570538300113474,
+      "pearson_p": 0.029553952573292547,
+      "spearman_rho_dt_correct": -0.046198297440958096,
+      "spearman_p": 2.7625123081360693e-07
+    },
+    {
+      "family": "LeaveShop",
+      "n": 11873,
+      "top1": 0.655689379263876,
+      "top3": 0.9724585193295713,
+      "mean_dt_when_correct_s": 2.540286876471847,
+      "mean_dt_when_wrong_s": 2.511358447488585,
+      "pearson_r_dt_correct": 0.004565168427349978,
+      "pearson_p": 0.6189168623164714,
+      "spearman_rho_dt_correct": 0.046861161134709665,
+      "spearman_p": 3.248719927416849e-07
+    },
+    {
+      "family": "SelectPackItem",
+      "n": 11582,
+      "top1": 0.7307891555862546,
+      "top3": 0.9604558798135037,
+      "mean_dt_when_correct_s": 3.9941477630749844,
+      "mean_dt_when_wrong_s": 4.319595894804362,
+      "pearson_r_dt_correct": -0.04619063835644844,
+      "pearson_p": 6.587689240284152e-07,
+      "spearman_rho_dt_correct": -0.08126976674162828,
+      "spearman_p": 1.9563850784834335e-18
+    },
+    {
+      "family": "SellItem",
+      "n": 10026,
+      "top1": 0.31099142230201476,
+      "top3": 0.6025334131258727,
+      "mean_dt_when_correct_s": 3.5679174684626895,
+      "mean_dt_when_wrong_s": 4.823948079521327,
+      "pearson_r_dt_correct": -0.12884855598800188,
+      "pearson_p": 2.2297970691405854e-38,
+      "spearman_rho_dt_correct": -0.17331577810098187,
+      "spearman_p": 1.883804270270984e-68
+    },
+    {
+      "family": "UseConsumable",
+      "n": 8086,
+      "top1": 0.8169675983180806,
+      "top3": 0.9418748454118229,
+      "mean_dt_when_correct_s": 5.2026289232011305,
+      "mean_dt_when_wrong_s": 4.685247747747748,
+      "pearson_r_dt_correct": 0.03998299626926812,
+      "pearson_p": 0.00032284914907087267,
+      "spearman_rho_dt_correct": 0.017684051277770407,
+      "spearman_p": 0.1118196858013824
+    },
+    {
+      "family": "BuyAndUseShopConsumable",
+      "n": 5597,
+      "top1": 0.7427193139181705,
+      "top3": 0.955511881365017,
+      "mean_dt_when_correct_s": 2.282014273113624,
+      "mean_dt_when_wrong_s": 2.648449074074074,
+      "pearson_r_dt_correct": -0.07397388607769849,
+      "pearson_p": 3.014859357051205e-08,
+      "spearman_rho_dt_correct": -0.11498944814347618,
+      "spearman_p": 6.1657012303803876e-18
+    },
+    {
+      "family": "SkipPack",
+      "n": 2681,
+      "top1": 0.856396866840731,
+      "top3": 0.9742633345766505,
+      "mean_dt_when_correct_s": 3.333710801393728,
+      "mean_dt_when_wrong_s": 4.094632034632035,
+      "pearson_r_dt_correct": -0.10341492688698563,
+      "pearson_p": 8.025542641393792e-08,
+      "spearman_rho_dt_correct": -0.11627604680755335,
+      "spearman_p": 1.5577700386618075e-09
+    },
+    {
+      "family": "SkipBlind",
+      "n": 962,
+      "top1": 0.9178794178794178,
+      "top3": 0.998960498960499,
+      "mean_dt_when_correct_s": 0.30022650056625144,
+      "mean_dt_when_wrong_s": 3.273839662447257,
+      "pearson_r_dt_correct": -0.60646990853623,
+      "pearson_p": 1.0848494624920384e-97,
+      "spearman_rho_dt_correct": -0.49542641960236805,
+      "spearman_p": 1.0123300524559766e-60
+    },
+    {
+      "family": "RerollBossBlind",
+      "n": 97,
+      "top1": 0.5051546391752577,
+      "top3": 1.0,
+      "mean_dt_when_correct_s": 1.8959183673469389,
+      "mean_dt_when_wrong_s": 2.957638888888889,
+      "pearson_r_dt_correct": -0.2566009640130982,
+      "pearson_p": 0.011177624554242965,
+      "spearman_rho_dt_correct": -0.22539077059043844,
+      "spearman_p": 0.026438489868649846
+    }
+  ]
+}

@@ -1,115 +1,209 @@
 {
-  "schema_version": "1.0.0",
-  "generated_at_utc": "2026-05-11T04:20:25.691260+00:00",
-  "src": "data/granularized",
+  "schema_version": "2.0.0",
+  "generated_at_utc": "2026-05-19T19:04:07.973244+00:00",
+  "mode": "tensorized",
   "action_map_path": "data/action_map.json",
-  "action_map_version": "v1.be9f837d384b",
-  "n_actions": 98,
-  "totals": {
-    "steps_scanned": 52407,
-    "label_resolved": 52402,
-    "mask_pass": 52402,
-    "mask_fail": 0,
-    "label_resolution_rate": 0.9999045928978954,
-    "mask_pass_rate": 0.9999045928978954,
-    "avg_unmasked_actions_per_step": 26.46702415938323,
-    "min_unmasked_actions_per_step": 1,
-    "max_unmasked_actions_per_step": 66
-  },
-  "label_consistency_failures": {
-    "unknown_label": 5
-  },
-  "label_consistency_examples": {
-    "unknown_label": [
-      {
-        "run_file": "data/granularized/video_id=2447726553/run_007.json",
-        "step_id": 90,
-        "action": "BuyAndUseShopConsumable",
-        "page_name": "In_Shop",
-        "source_kind": "pass_through",
-        "target_index": null,
-        "swap_pair": null,
-        "diagnostic": "unknown_label:BuyAndUseShopConsumable"
-      },
-      {
-        "run_file": "data/granularized/video_id=2465596400/run_000.json",
-        "step_id": 205,
-        "action": "BuyAndUseShopConsumable",
-        "page_name": "In_Shop",
-        "source_kind": "pass_through",
-        "target_index": null,
-        "swap_pair": null,
-        "diagnostic": "unknown_label:BuyAndUseShopConsumable"
-      },
-      {
-        "run_file": "data/granularized/video_id=2483356384/run_000.json",
-        "step_id": 443,
-        "action": "BuyAndUseShopConsumable",
-        "page_name": "In_Shop",
-        "source_kind": "pass_through",
-        "target_index": null,
-        "swap_pair": null,
-        "diagnostic": "unknown_label:BuyAndUseShopConsumable"
-      },
-      {
-        "run_file": "data/granularized/video_id=2612264362/run_000.json",
-        "step_id": 193,
-        "action": "BuyAndUseShopConsumable",
-        "page_name": "In_Shop",
-        "source_kind": "pass_through",
-        "target_index": null,
-        "swap_pair": null,
-        "diagnostic": "unknown_label:BuyAndUseShopConsumable"
-      },
-      {
-        "run_file": "data/granularized/video_id=2730761367/run_000.json",
-        "step_id": 288,
-        "action": "BuyAndUseShopConsumable",
-        "page_name": "In_Shop",
-        "source_kind": "pass_through",
-        "target_index": null,
-        "swap_pair": null,
-        "diagnostic": "unknown_label:BuyAndUseShopConsumable"
-      }
-    ]
-  },
-  "mask_failure_classes": {},
-  "mask_failure_examples": {},
-  "pass_by_page": {
-    "Blind_Select": 2032,
-    "Dummy_Page": 446,
-    "In_Blind": 31562,
-    "Cash_Out": 2024,
-    "In_Shop": 12968,
-    "In_JokerStandardPlanet_Pack": 1725,
-    "In_TarotSpectral_Pack": 1645
-  },
-  "fail_by_page": {},
-  "pass_by_family": {
-    "StartNewRun": 295,
-    "SelectBlind": 1526,
-    "SelectCard": 24416,
-    "DiscardHand": 2429,
-    "PlayHand": 3359,
-    "CashOut": 1592,
-    "BuyShopItem": 3703,
-    "SkipPack": 870,
-    "SelectPackItem": 1684,
-    "LeaveShop": 1480,
-    "SellItem": 1454,
-    "UseConsumable": 1849,
-    "RerollShop": 5821,
-    "BuyAndUseShopConsumable": 856,
-    "SkipBlind": 183,
-    "SWAP": 748,
-    "RerollBossBlind": 137
-  },
-  "fail_by_family": {},
-  "pass_by_source_kind": {
-    "pass_through": 20158,
-    "select": 24416,
-    "commit": 7080,
-    "swap_synth": 748
-  },
-  "fail_by_source_kind": {}
+  "action_map_version": "v2.aefe9cf43e5a",
+  "n_actions": 134,
+  "tensorized": {
+    "tensorized_root": "data/tensorized",
+    "shards_seen": 958,
+    "shards_missing_channels": 0,
+    "n_rows": 358679,
+    "n_family_resolved": 357721,
+    "n_full_pass": 357659,
+    "n_failures": 62,
+    "full_pass_rate": 0.9998266805694941,
+    "failure_classes": {
+      "family_mask_not_set_at_id": 46,
+      "item_ptr_mask_violation": 13,
+      "swap_joker_mask_violation": 3
+    },
+    "pass_counts": {
+      "family_unresolved": 958,
+      "ok_card_seq": 82822,
+      "ok_no_args": 133697,
+      "ok_single_ptr": 81522,
+      "ok_chained_cards": 50920,
+      "ok_joker_pair": 8698
+    },
+    "per_family_pass": {
+      "DiscardHand": 34786,
+      "PlayHand": 48036,
+      "CashOut": 21912,
+      "BuyShopItem_PackShopOfferings": 28475,
+      "SelectPackItem_PackOfferings": 23261,
+      "SellItem_CurrentJokers": 8929,
+      "LeaveShop": 19874,
+      "SelectBlind": 20412,
+      "BuyShopItem_TopShelfShopOfferings": 16777,
+      "SellItem_CurrentConsumables": 10305,
+      "UseConsumable_CurrentConsumables": 27659,
+      "BuyShopItem_VoucherShopOfferings": 5314,
+      "SkipPack": 4676,
+      "RerollShop": 63112,
+      "BuyAndUseShopConsumable_TopShelfShopOfferings": 11735,
+      "SWAP": 8701,
+      "SkipBlind": 2430,
+      "RerollBossBlind": 1281
+    },
+    "per_family_fail": {
+      "BuyAndUseShopConsumable_TopShelfShopOfferings": 45,
+      "SWAP": 1
+    },
+    "failure_examples": {
+      "family_mask_not_set_at_id": [
+        {
+          "shard": "data/tensorized/video_id=2432878891/run_028.npz",
+          "row": 82,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2441610592/run_031.npz",
+          "row": 40,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2442455772/run_011.npz",
+          "row": 362,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2447726553/run_013.npz",
+          "row": 33,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2452000399/run_005.npz",
+          "row": 37,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2459594873/run_015.npz",
+          "row": 339,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2463069715/run_005.npz",
+          "row": 564,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2465596400/run_007.npz",
+          "row": 287,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2483356384/run_006.npz",
+          "row": 188,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        },
+        {
+          "shard": "data/tensorized/video_id=2483356384/run_010.npz",
+          "row": 201,
+          "family_id": 13,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings"
+        }
+      ],
+      "item_ptr_mask_violation": [
+        {
+          "shard": "data/tensorized/video_id=2457093945/run_012.npz",
+          "row": 603,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        },
+        {
+          "shard": "data/tensorized/video_id=2475381824/run_003.npz",
+          "row": 40,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        },
+        {
+          "shard": "data/tensorized/video_id=2495741371/run_020.npz",
+          "row": 407,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        },
+        {
+          "shard": "data/tensorized/video_id=2508905861/run_003.npz",
+          "row": 11,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        },
+        {
+          "shard": "data/tensorized/video_id=2599415219/run_010.npz",
+          "row": 322,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        },
+        {
+          "shard": "data/tensorized/video_id=2605407177/run_003.npz",
+          "row": 287,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        },
+        {
+          "shard": "data/tensorized/video_id=2609783696/run_034.npz",
+          "row": 343,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        },
+        {
+          "shard": "data/tensorized/video_id=2615865922/run_005.npz",
+          "row": 106,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        },
+        {
+          "shard": "data/tensorized/video_id=2617580445/run_011.npz",
+          "row": 937,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 2
+        },
+        {
+          "shard": "data/tensorized/video_id=2621127634/run_005.npz",
+          "row": 49,
+          "family": "BuyAndUseShopConsumable_TopShelfShopOfferings",
+          "p": 1
+        }
+      ],
+      "swap_joker_mask_violation": [
+        {
+          "shard": "data/tensorized/video_id=2495741371/run_018.npz",
+          "row": 385,
+          "swap_i": 4,
+          "swap_j": 6
+        },
+        {
+          "shard": "data/tensorized/video_id=2495741371/run_018.npz",
+          "row": 386,
+          "swap_i": 5,
+          "swap_j": 6
+        },
+        {
+          "shard": "data/tensorized/video_id=2733209785/run_005.npz",
+          "row": 1163,
+          "swap_i": 3,
+          "swap_j": 4
+        }
+      ]
+    },
+    "family_map_version": "fv1.aeab2e2f9431",
+    "n_families": 19,
+    "branched_caps": {
+      "MAX_ITEM_ZONE_SIZE": 15,
+      "MAX_CARD_ZONE_SIZE": 15,
+      "MAX_JOKER_SLOTS": 10,
+      "MAX_CARDS_PER_DECISION": 5
+    }
+  }
 }

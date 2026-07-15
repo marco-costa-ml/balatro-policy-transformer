@@ -23,9 +23,38 @@ state is wired up):
 - SWAP swap-count cap and last-swap suppression
 - ``SellItem`` eternal-sticker exclusion
 
+Branched-policy additions
+-------------------------
+The autoregressive policy operates over a 19-family ``family_map`` (see
+``family_map.py``) plus per-zone pointer masks for each indexed / chained
+family. The new helpers in this module:
+
+- ``build_family_mask(step, action_map, family_map)`` — parent-start
+  legality per family. Implementation note: v1's flat mask is page-gated
+  only, so ``PlayHand`` / ``DiscardHand`` are flat-mask-legal at any
+  In_Blind step regardless of ``pending_cards``. That matches our
+  parent-start semantics. ``family_mask[f] = OR over the family's flat
+  slice`` works uniformly for every family except the reserved
+  ``StartNewRun`` (always False).
+- ``build_item_pointer_mask(family, step, action_map, max_size)`` — per-
+  position validity within the family's **item** zone.
+- ``build_card_pointer_mask(family, step, action_map, max_size)`` — per-
+  position validity within the family's **card-pool** zone (resolved by
+  ``page_name`` for ``UseConsumable`` and by parent subtype for
+  ``SelectPackItem``).
+- ``build_swap_joker_mask(step, max_joker_slots)`` — per-position joker
+  validity for the SWAP joker-pair head.
+
+Pointer masks reuse the v1 subfamily slices wherever possible so legality
+semantics stay in lockstep with ``build_action_mask``.
+
 Importable helpers
 ------------------
 - ``build_action_mask(step, action_map) -> np.ndarray[bool, N_ACTIONS]``
+- ``build_family_mask(step, action_map, family_map) -> np.ndarray[bool, n_families]``
+- ``build_item_pointer_mask(family, step, action_map, max_size) -> np.ndarray[bool, max_size]``
+- ``build_card_pointer_mask(family, step, action_map, max_size) -> np.ndarray[bool, max_size]``
+- ``build_swap_joker_mask(step, max_joker_slots) -> np.ndarray[bool, max_joker_slots]``
 - ``candidate_count_for_subfamily(base, zone, step) -> int``
 - ``allowed_families_for_page(page_name) -> set[str]``
 - ``PAGE_GATE``, ``GLOBAL_FAMILIES`` constants
@@ -225,6 +254,230 @@ def build_action_mask(
                     mask[swap_offset + k] = True
 
     return mask
+
+
+# ---------------------------------------------------------------------------
+# Branched-policy mask helpers (family + per-zone pointer masks)
+# ---------------------------------------------------------------------------
+
+# Per-family v1 subfamily key used to source the item-pointer mask. ``None``
+# means the family does not have an item pointer (no_args / card_seq) OR is
+# the SWAP joker pair (handled by ``build_swap_joker_mask``).
+_FAMILY_TO_ITEM_SUBFAMILY: dict[str, str | None] = {
+    # no_args
+    "SelectBlind": None,
+    "SkipBlind": None,
+    "RerollBossBlind": None,
+    "CashOut": None,
+    "LeaveShop": None,
+    "SkipPack": None,
+    "RerollShop": None,
+    # card_seq
+    "PlayHand": None,
+    "DiscardHand": None,
+    # single_ptr
+    "BuyShopItem_VoucherShopOfferings": "BuyShopItem_VoucherShopOfferings",
+    "BuyShopItem_PackShopOfferings": "BuyShopItem_PackShopOfferings",
+    "BuyShopItem_TopShelfShopOfferings": "BuyShopItem_TopShelfShopOfferings",
+    "BuyAndUseShopConsumable_TopShelfShopOfferings": (
+        "BuyAndUseShopConsumable_TopShelfShopOfferings"
+    ),
+    "SellItem_CurrentJokers": "SellItem_CurrentJokers",
+    "SellItem_CurrentConsumables": "SellItem_CurrentConsumables",
+    # chained_cards
+    "UseConsumable_CurrentConsumables": "UseConsumable_CurrentConsumables",
+    "SelectPackItem_PackOfferings": "SelectPackItem_PackOfferings",
+    # joker_pair (handled by build_swap_joker_mask)
+    "SWAP": None,
+    # reserved
+    "StartNewRun": None,
+}
+
+
+# Per-family card-pool zone resolution. The value can be:
+#   - a literal canonical zone name (e.g. ``"CurrentHand"``),
+#   - ``"BY_PAGE"`` to dispatch on ``step.page_name`` via
+#     ``argument_spec.card_zone_for_use_consumable``,
+#   - ``"BY_PACK_SUBTYPE"`` to dispatch on ``step.source_action_subtype``
+#     via ``argument_spec.card_zone_for_select_pack_item``,
+#   - ``None`` if the family has no card pool.
+_FAMILY_CARD_ZONE_RULE: dict[str, str | None] = {
+    "PlayHand": "CurrentHand",
+    "DiscardHand": "CurrentHand",
+    "UseConsumable_CurrentConsumables": "BY_PAGE",
+    "SelectPackItem_PackOfferings": "BY_PACK_SUBTYPE",
+}
+
+
+# Map canonical card zone -> v1 subfamily key (whose flat slice gives the
+# per-position validity bits we want).
+_CARD_ZONE_TO_SUBFAMILY: dict[str, str] = {
+    "CurrentHand": "SelectCard_CurrentHand",
+    "TarotSpectralHand": "SelectCard_TarotSpectralHand",
+}
+
+
+def _slice_flat(
+    flat_mask: np.ndarray, offset: int, size: int
+) -> np.ndarray:
+    """Return a copy of ``flat_mask[offset:offset+size]`` as a contiguous bool array."""
+    out = np.zeros(size, dtype=bool)
+    if size <= 0 or offset < 0:
+        return out
+    end = min(offset + size, flat_mask.shape[0])
+    if end > offset:
+        out[: end - offset] = flat_mask[offset:end]
+    return out
+
+
+def build_family_mask(
+    step: dict[str, Any],
+    action_map: dict[str, Any],
+    family_map: dict[str, Any],
+    *,
+    flat_mask: np.ndarray | None = None,
+) -> np.ndarray:
+    """Return a length-``n_families`` boolean mask of parent-start legality.
+
+    For every family except the reserved ``StartNewRun``, legality reduces
+    to ``OR`` over the family's slice in the v1 flat action mask. Because
+    v1 gates by page only (and not by ``pending_cards.length`` for the
+    ``PlayHand``/``DiscardHand`` slots), this also captures parent-start
+    legality for ``card_seq`` families.
+
+    Pass ``flat_mask`` to reuse a precomputed v1 mask; otherwise it's
+    built from the step on demand.
+    """
+    if flat_mask is None:
+        flat_mask = build_action_mask(step, action_map)
+
+    n_families = int(family_map["n_families"])
+    out = np.zeros(n_families, dtype=bool)
+    family_to_id = family_map["family_to_id"]
+    family_to_flat_offset = family_map["family_to_flat_offset"]
+    family_to_flat_size = family_map["family_to_flat_size"]
+
+    for fam, fid in family_to_id.items():
+        if fam == "StartNewRun":
+            continue
+        off = int(family_to_flat_offset.get(fam, -1))
+        sz = int(family_to_flat_size.get(fam, 0))
+        if off < 0 or sz <= 0:
+            continue
+        slc = _slice_flat(flat_mask, off, sz)
+        if bool(slc.any()):
+            out[int(fid)] = True
+    return out
+
+
+def build_item_pointer_mask(
+    family: str,
+    step: dict[str, Any],
+    action_map: dict[str, Any],
+    max_size: int,
+    *,
+    flat_mask: np.ndarray | None = None,
+) -> np.ndarray:
+    """Return a length-``max_size`` mask of valid item-pointer positions.
+
+    The mask is the v1 subfamily slice for the family's item zone padded
+    or truncated to ``max_size``. Returns an all-False array for families
+    without an item pointer (no_args / card_seq / SWAP / reserved).
+    """
+    out = np.zeros(int(max_size), dtype=bool)
+    subfamily_key = _FAMILY_TO_ITEM_SUBFAMILY.get(family)
+    if subfamily_key is None:
+        return out
+
+    family_offsets: dict[str, int] = action_map["family_offsets"]
+    family_sizes: dict[str, int] = action_map["family_sizes"]
+    off = int(family_offsets.get(subfamily_key, -1))
+    sz = int(family_sizes.get(subfamily_key, 0))
+    if off < 0 or sz <= 0:
+        return out
+
+    if flat_mask is None:
+        flat_mask = build_action_mask(step, action_map)
+    slc = _slice_flat(flat_mask, off, sz)
+    take = min(sz, int(max_size))
+    out[:take] = slc[:take]
+    return out
+
+
+def resolve_card_zone(family: str, step: dict[str, Any]) -> str | None:
+    """Resolve the active card-pool zone for ``family`` at ``step``.
+
+    Returns ``None`` for families without a card pool, or when the
+    page / subtype implies no card targeting (e.g. SelectPackItem with
+    a non-tarot subtype).
+    """
+    rule = _FAMILY_CARD_ZONE_RULE.get(family)
+    if rule is None:
+        return None
+    if rule == "BY_PAGE":
+        from argument_spec import card_zone_for_use_consumable
+
+        return card_zone_for_use_consumable(step.get("page_name"))
+    if rule == "BY_PACK_SUBTYPE":
+        from argument_spec import card_zone_for_select_pack_item
+
+        # The granularized step records the subtype on the commit step;
+        # use both source_action_subtype and action_subtype to be safe.
+        subtype = step.get("source_action_subtype") or step.get("action_subtype")
+        return card_zone_for_select_pack_item(subtype)
+    return rule
+
+
+def build_card_pointer_mask(
+    family: str,
+    step: dict[str, Any],
+    action_map: dict[str, Any],
+    max_size: int,
+    *,
+    flat_mask: np.ndarray | None = None,
+) -> np.ndarray:
+    """Return a length-``max_size`` mask of valid card-pool pointer positions.
+
+    Resolves the card zone via ``resolve_card_zone`` and reads the
+    corresponding v1 ``SelectCard_<zone>`` subfamily slice. Returns
+    all-False if the family has no card pool at this step.
+    """
+    out = np.zeros(int(max_size), dtype=bool)
+    zone = resolve_card_zone(family, step)
+    if zone is None:
+        return out
+    subfamily_key = _CARD_ZONE_TO_SUBFAMILY.get(zone)
+    if subfamily_key is None:
+        return out
+    family_offsets: dict[str, int] = action_map["family_offsets"]
+    family_sizes: dict[str, int] = action_map["family_sizes"]
+    off = int(family_offsets.get(subfamily_key, -1))
+    sz = int(family_sizes.get(subfamily_key, 0))
+    if off < 0 or sz <= 0:
+        return out
+    if flat_mask is None:
+        flat_mask = build_action_mask(step, action_map)
+    slc = _slice_flat(flat_mask, off, sz)
+    take = min(sz, int(max_size))
+    out[:take] = slc[:take]
+    return out
+
+
+def build_swap_joker_mask(
+    step: dict[str, Any],
+    max_joker_slots: int,
+) -> np.ndarray:
+    """Return a length-``max_joker_slots`` mask of valid joker positions.
+
+    A position ``i`` is valid iff ``i < jokers_current``. The joker-j
+    "j != i" exclusion is applied dynamically inside the decoder.
+    """
+    out = np.zeros(int(max_joker_slots), dtype=bool)
+    jokers_current = _jokers_current(step)
+    take = min(int(jokers_current), int(max_joker_slots))
+    if take > 0:
+        out[:take] = True
+    return out
 
 
 def main(argv: list[str] | None = None) -> None:

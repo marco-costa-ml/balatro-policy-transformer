@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0.0",
+  "max_cards_per_decision": 5,
+  "max_cards_per_decision_play_discard": 5,
+  "max_cards_per_decision_tarot_spectral": 3,
+  "argument_spec": {
+    "249": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": "edition_any"
+    },
+    "251": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": null
+    },
+    "252": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": "seal_red"
+    },
+    "259": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": "seal_purple"
+    },
+    "263": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": "seal_gold"
+    },
+    "264": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": "seal_blue"
+    },
+    "298": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": null
+    },
+    "299": {
+      "min_cards": 2,
+      "max_cards": 2,
+      "attribute_mask": null
+    },
+    "300": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": null
+    },
+    "302": {
+      "min_cards": 1,
+      "max_cards": 2,
+      "attribute_mask": null
+    },
+    "304": {
+      "min_cards": 1,
+      "max_cards": 2,
+      "attribute_mask": null
+    },
+    "305": {
+      "min_cards": 1,
+      "max_cards": 2,
+      "attribute_mask": null
+    },
+    "309": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": null
+    },
+    "310": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": null
+    },
+    "311": {
+      "min_cards": 1,
+      "max_cards": 2,
+      "attribute_mask": null
+    },
+    "312": {
+      "min_cards": 1,
+      "max_cards": 3,
+      "attribute_mask": null
+    },
+    "313": {
+      "min_cards": 1,
+      "max_cards": 3,
+      "attribute_mask": null
+    },
+    "314": {
+      "min_cards": 1,
+      "max_cards": 2,
+      "attribute_mask": null
+    },
+    "315": {
+      "min_cards": 1,
+      "max_cards": 3,
+      "attribute_mask": null
+    },
+    "317": {
+      "min_cards": 1,
+      "max_cards": 1,
+      "attribute_mask": null
+    },
+    "319": {
+      "min_cards": 1,
+      "max_cards": 3,
+      "attribute_mask": null
+    }
+  },
+  "inventory_gates": {
+    "248": "joker_count_>=_1",
+    "256": "hex_no_editioned_jokers",
+    "262": "needs_joker_slot",
+    "265": "needs_joker_slot",
+    "301": "needs_consumable_slot",
+    "303": "fool_last_planet_not_303",
+    "307": "needs_consumable_slot",
+    "308": "needs_joker_slot",
+    "318": "joker_count_>=_1"
+  },
+  "attribute_mask_rules": {
+    "seal_blue": {
+      "field": "seal",
+      "value": "blue_seal"
+    },
+    "seal_gold": {
+      "field": "seal",
+      "value": "gold_seal"
+    },
+    "seal_purple": {
+      "field": "seal",
+      "value": "purple_seal"
+    },
+    "seal_red": {
+      "field": "seal",
+      "value": "red_seal"
+    },
+    "edition_any": {
+      "field": "edition",
+      "value": "__any_non_null__"
+    }
+  },
+  "use_consumable_card_zone_by_page": {
+    "In_Blind": "CurrentHand",
+    "In_TarotSpectral_Pack": "TarotSpectralHand"
+  },
+  "select_pack_item_tarot_subtype": "selectpackitemtarot",
+  "select_pack_item_tarot_card_zone": "TarotSpectralHand"
+}

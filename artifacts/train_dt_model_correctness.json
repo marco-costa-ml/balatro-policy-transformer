@@ -1,0 +1,96 @@
+{
+  "split": "train",
+  "n_kept_steps": 129828,
+  "n_runs_with_kept": 716,
+  "n_steps_seen_with_prev": 501307,
+  "n_steps_filtered_subtract_kept": 371479,
+  "stake_class_id": 268,
+  "round_range_inclusive_lo": 1,
+  "round_exclusive_hi": 36,
+  "afk_cap_s": 90.0,
+  "excluded_base_actions": [
+    "SWAP",
+    "SelectCard"
+  ],
+  "overall_top1": 0.7381304495178236,
+  "overall_top3": 0.9331037988723542,
+  "mean_dt_when_correct_s": 3.6702445302445303,
+  "mean_dt_when_wrong_s": 3.6486518814832247,
+  "pearson_r_dt_correct": 0.0024257356880461093,
+  "pearson_p": 0.3821043504990467,
+  "spearman_rho_dt_correct": -0.044797756328511754,
+  "spearman_p": 1.1481374259937418e-58,
+  "decile_bins": [
+    {
+      "center_s": 0.7666666666666667,
+      "n": 12983,
+      "top1": 0.7735500269583301,
+      "wilson_lo": 0.766270276282169,
+      "wilson_hi": 0.780667941552104
+    },
+    {
+      "center_s": 1.0333333333333334,
+      "n": 12983,
+      "top1": 0.7990449048756065,
+      "wilson_lo": 0.7920639706611703,
+      "wilson_hi": 0.8058489198756635
+    },
+    {
+      "center_s": 1.3333333333333333,
+      "n": 12983,
+      "top1": 0.7673881229299854,
+      "wilson_lo": 0.7600420553151525,
+      "wilson_hi": 0.774575999932399
+    },
+    {
+      "center_s": 1.8333333333333333,
+      "n": 12983,
+      "top1": 0.7203265809135023,
+      "wilson_lo": 0.7125415348523425,
+      "wilson_hi": 0.7279812786391227
+    },
+    {
+      "center_s": 2.3,
+      "n": 12982,
+      "top1": 0.7687567401016793,
+      "wilson_lo": 0.7614249276624506,
+      "wilson_hi": 0.7759295399909975
+    },
+    {
+      "center_s": 2.6666666666666665,
+      "n": 12983,
+      "top1": 0.7248709851344065,
+      "wilson_lo": 0.7171234423758838,
+      "wilson_hi": 0.7324854910232884
+    },
+    {
+      "center_s": 3.1666666666666665,
+      "n": 12983,
+      "top1": 0.6768851575136717,
+      "wilson_lo": 0.6687892526541471,
+      "wilson_hi": 0.6848764146009306
+    },
+    {
+      "center_s": 4.166666666666667,
+      "n": 12983,
+      "top1": 0.6227374258645921,
+      "wilson_lo": 0.6143646382798356,
+      "wilson_hi": 0.6310376002444258
+    },
+    {
+      "center_s": 6.866666666666666,
+      "n": 12983,
+      "top1": 0.7207116999152738,
+      "wilson_lo": 0.7129297938226262,
+      "wilson_hi": 0.728363029830509
+    },
+    {
+      "center_s": 10.866666666666667,
+      "n": 12982,
+      "top1": 0.807040517639809,
+      "wilson_lo": 0.800161704558727,
+      "wilson_hi": 0.8137376672001277
+    }
+  ],
+  "checkpoint": "C:\\Users\\marco\\Desktop\\balatro-policy-transformer\\artifacts\\checkpoints\\best.pt"
+}

@@ -1,0 +1,941 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-05-15T06:00:35.829567+00:00",
+  "split": "train",
+  "resolved_steps": 200133,
+  "n_actions": 134,
+  "preserve_ev_subtypes": false,
+  "per_action": [
+    {
+      "action_index": 14,
+      "label": "SelectCard_CurrentHand_0",
+      "count": 25685,
+      "percent_of_split": 12.833965
+    },
+    {
+      "action_index": 17,
+      "label": "SelectCard_CurrentHand_3",
+      "count": 23810,
+      "percent_of_split": 11.897088
+    },
+    {
+      "action_index": 9,
+      "label": "RerollShop",
+      "count": 14877,
+      "percent_of_split": 7.433557
+    },
+    {
+      "action_index": 15,
+      "label": "SelectCard_CurrentHand_1",
+      "count": 14192,
+      "percent_of_split": 7.091284
+    },
+    {
+      "action_index": 16,
+      "label": "SelectCard_CurrentHand_2",
+      "count": 13996,
+      "percent_of_split": 6.993349
+    },
+    {
+      "action_index": 5,
+      "label": "PlayHand",
+      "count": 13904,
+      "percent_of_split": 6.94738
+    },
+    {
+      "action_index": 18,
+      "label": "SelectCard_CurrentHand_4",
+      "count": 13442,
+      "percent_of_split": 6.716534
+    },
+    {
+      "action_index": 4,
+      "label": "DiscardHand",
+      "count": 9794,
+      "percent_of_split": 4.893746
+    },
+    {
+      "action_index": 58,
+      "label": "BuyShopItem_PackShopOfferings_0",
+      "count": 6325,
+      "percent_of_split": 3.160398
+    },
+    {
+      "action_index": 6,
+      "label": "CashOut",
+      "count": 6306,
+      "percent_of_split": 3.150905
+    },
+    {
+      "action_index": 1,
+      "label": "SelectBlind",
+      "count": 5747,
+      "percent_of_split": 2.87159
+    },
+    {
+      "action_index": 19,
+      "label": "SelectCard_CurrentHand_5",
+      "count": 5351,
+      "percent_of_split": 2.673722
+    },
+    {
+      "action_index": 7,
+      "label": "LeaveShop",
+      "count": 5110,
+      "percent_of_split": 2.553302
+    },
+    {
+      "action_index": 11,
+      "label": "UseConsumable_CurrentConsumables_1",
+      "count": 3366,
+      "percent_of_split": 1.681882
+    },
+    {
+      "action_index": 10,
+      "label": "UseConsumable_CurrentConsumables_0",
+      "count": 3126,
+      "percent_of_split": 1.561961
+    },
+    {
+      "action_index": 20,
+      "label": "SelectCard_CurrentHand_6",
+      "count": 2568,
+      "percent_of_split": 1.283147
+    },
+    {
+      "action_index": 44,
+      "label": "SelectPackItem_PackOfferings_0",
+      "count": 2496,
+      "percent_of_split": 1.247171
+    },
+    {
+      "action_index": 59,
+      "label": "BuyShopItem_PackShopOfferings_1",
+      "count": 2237,
+      "percent_of_split": 1.117757
+    },
+    {
+      "action_index": 60,
+      "label": "BuyShopItem_TopShelfShopOfferings_0",
+      "count": 2024,
+      "percent_of_split": 1.011327
+    },
+    {
+      "action_index": 45,
+      "label": "SelectPackItem_PackOfferings_1",
+      "count": 1934,
+      "percent_of_split": 0.966357
+    },
+    {
+      "action_index": 46,
+      "label": "SelectPackItem_PackOfferings_2",
+      "count": 1685,
+      "percent_of_split": 0.84194
+    },
+    {
+      "action_index": 61,
+      "label": "BuyShopItem_TopShelfShopOfferings_1",
+      "count": 1671,
+      "percent_of_split": 0.834945
+    },
+    {
+      "action_index": 54,
+      "label": "BuyShopItem_VoucherShopOfferings_0",
+      "count": 1519,
+      "percent_of_split": 0.758995
+    },
+    {
+      "action_index": 50,
+      "label": "BuyAndUseShopConsumable_TopShelfShopOfferings_0",
+      "count": 1445,
+      "percent_of_split": 0.72202
+    },
+    {
+      "action_index": 21,
+      "label": "SelectCard_CurrentHand_7",
+      "count": 1383,
+      "percent_of_split": 0.69104
+    },
+    {
+      "action_index": 8,
+      "label": "SkipPack",
+      "count": 1337,
+      "percent_of_split": 0.668056
+    },
+    {
+      "action_index": 51,
+      "label": "BuyAndUseShopConsumable_TopShelfShopOfferings_1",
+      "count": 1266,
+      "percent_of_split": 0.632579
+    },
+    {
+      "action_index": 86,
+      "label": "SellItem_CurrentConsumables_1",
+      "count": 1107,
+      "percent_of_split": 0.553132
+    },
+    {
+      "action_index": 85,
+      "label": "SellItem_CurrentConsumables_0",
+      "count": 1004,
+      "percent_of_split": 0.501666
+    },
+    {
+      "action_index": 12,
+      "label": "UseConsumable_CurrentConsumables_2",
+      "count": 751,
+      "percent_of_split": 0.37525
+    },
+    {
+      "action_index": 2,
+      "label": "SkipBlind",
+      "count": 642,
+      "percent_of_split": 0.320787
+    },
+    {
+      "action_index": 47,
+      "label": "SelectPackItem_PackOfferings_3",
+      "count": 608,
+      "percent_of_split": 0.303798
+    },
+    {
+      "action_index": 89,
+      "label": "SWAP_0_1",
+      "count": 564,
+      "percent_of_split": 0.281813
+    },
+    {
+      "action_index": 22,
+      "label": "SelectCard_CurrentHand_8",
+      "count": 539,
+      "percent_of_split": 0.269321
+    },
+    {
+      "action_index": 75,
+      "label": "SellItem_CurrentJokers_0",
+      "count": 514,
+      "percent_of_split": 0.256829
+    },
+    {
+      "action_index": 79,
+      "label": "SellItem_CurrentJokers_4",
+      "count": 496,
+      "percent_of_split": 0.247835
+    },
+    {
+      "action_index": 29,
+      "label": "SelectCard_TarotSpectralHand_0",
+      "count": 492,
+      "percent_of_split": 0.245837
+    },
+    {
+      "action_index": 52,
+      "label": "BuyAndUseShopConsumable_TopShelfShopOfferings_2",
+      "count": 487,
+      "percent_of_split": 0.243338
+    },
+    {
+      "action_index": 76,
+      "label": "SellItem_CurrentJokers_1",
+      "count": 481,
+      "percent_of_split": 0.24034
+    },
+    {
+      "action_index": 62,
+      "label": "BuyShopItem_TopShelfShopOfferings_2",
+      "count": 435,
+      "percent_of_split": 0.217355
+    },
+    {
+      "action_index": 30,
+      "label": "SelectCard_TarotSpectralHand_1",
+      "count": 421,
+      "percent_of_split": 0.21036
+    },
+    {
+      "action_index": 77,
+      "label": "SellItem_CurrentJokers_2",
+      "count": 409,
+      "percent_of_split": 0.204364
+    },
+    {
+      "action_index": 48,
+      "label": "SelectPackItem_PackOfferings_4",
+      "count": 364,
+      "percent_of_split": 0.181879
+    },
+    {
+      "action_index": 98,
+      "label": "SWAP_1_2",
+      "count": 344,
+      "percent_of_split": 0.171886
+    },
+    {
+      "action_index": 87,
+      "label": "SellItem_CurrentConsumables_2",
+      "count": 342,
+      "percent_of_split": 0.170886
+    },
+    {
+      "action_index": 78,
+      "label": "SellItem_CurrentJokers_3",
+      "count": 330,
+      "percent_of_split": 0.16489
+    },
+    {
+      "action_index": 31,
+      "label": "SelectCard_TarotSpectralHand_2",
+      "count": 328,
+      "percent_of_split": 0.163891
+    },
+    {
+      "action_index": 32,
+      "label": "SelectCard_TarotSpectralHand_3",
+      "count": 326,
+      "percent_of_split": 0.162892
+    },
+    {
+      "action_index": 33,
+      "label": "SelectCard_TarotSpectralHand_4",
+      "count": 293,
+      "percent_of_split": 0.146403
+    },
+    {
+      "action_index": 34,
+      "label": "SelectCard_TarotSpectralHand_5",
+      "count": 263,
+      "percent_of_split": 0.131413
+    },
+    {
+      "action_index": 35,
+      "label": "SelectCard_TarotSpectralHand_6",
+      "count": 261,
+      "percent_of_split": 0.130413
+    },
+    {
+      "action_index": 106,
+      "label": "SWAP_2_3",
+      "count": 259,
+      "percent_of_split": 0.129414
+    },
+    {
+      "action_index": 23,
+      "label": "SelectCard_CurrentHand_9",
+      "count": 182,
+      "percent_of_split": 0.09094
+    },
+    {
+      "action_index": 36,
+      "label": "SelectCard_TarotSpectralHand_7",
+      "count": 144,
+      "percent_of_split": 0.071952
+    },
+    {
+      "action_index": 80,
+      "label": "SellItem_CurrentJokers_5",
+      "count": 142,
+      "percent_of_split": 0.070953
+    },
+    {
+      "action_index": 3,
+      "label": "RerollBossBlind",
+      "count": 137,
+      "percent_of_split": 0.068454
+    },
+    {
+      "action_index": 90,
+      "label": "SWAP_0_2",
+      "count": 125,
+      "percent_of_split": 0.062458
+    },
+    {
+      "action_index": 53,
+      "label": "BuyAndUseShopConsumable_TopShelfShopOfferings_3",
+      "count": 121,
+      "percent_of_split": 0.06046
+    },
+    {
+      "action_index": 63,
+      "label": "BuyShopItem_TopShelfShopOfferings_3",
+      "count": 93,
+      "percent_of_split": 0.046469
+    },
+    {
+      "action_index": 113,
+      "label": "SWAP_3_4",
+      "count": 89,
+      "percent_of_split": 0.04447
+    },
+    {
+      "action_index": 24,
+      "label": "SelectCard_CurrentHand_10",
+      "count": 83,
+      "percent_of_split": 0.041472
+    },
+    {
+      "action_index": 81,
+      "label": "SellItem_CurrentJokers_6",
+      "count": 60,
+      "percent_of_split": 0.02998
+    },
+    {
+      "action_index": 37,
+      "label": "SelectCard_TarotSpectralHand_8",
+      "count": 44,
+      "percent_of_split": 0.021985
+    },
+    {
+      "action_index": 119,
+      "label": "SWAP_4_5",
+      "count": 43,
+      "percent_of_split": 0.021486
+    },
+    {
+      "action_index": 99,
+      "label": "SWAP_1_3",
+      "count": 41,
+      "percent_of_split": 0.020486
+    },
+    {
+      "action_index": 25,
+      "label": "SelectCard_CurrentHand_11",
+      "count": 35,
+      "percent_of_split": 0.017488
+    },
+    {
+      "action_index": 107,
+      "label": "SWAP_2_4",
+      "count": 31,
+      "percent_of_split": 0.01549
+    },
+    {
+      "action_index": 55,
+      "label": "BuyShopItem_VoucherShopOfferings_1",
+      "count": 15,
+      "percent_of_split": 0.007495
+    },
+    {
+      "action_index": 91,
+      "label": "SWAP_0_3",
+      "count": 11,
+      "percent_of_split": 0.005496
+    },
+    {
+      "action_index": 124,
+      "label": "SWAP_5_6",
+      "count": 11,
+      "percent_of_split": 0.005496
+    },
+    {
+      "action_index": 38,
+      "label": "SelectCard_TarotSpectralHand_9",
+      "count": 11,
+      "percent_of_split": 0.005496
+    },
+    {
+      "action_index": 82,
+      "label": "SellItem_CurrentJokers_7",
+      "count": 11,
+      "percent_of_split": 0.005496
+    },
+    {
+      "action_index": 26,
+      "label": "SelectCard_CurrentHand_12",
+      "count": 9,
+      "percent_of_split": 0.004497
+    },
+    {
+      "action_index": 100,
+      "label": "SWAP_1_4",
+      "count": 8,
+      "percent_of_split": 0.003997
+    },
+    {
+      "action_index": 114,
+      "label": "SWAP_3_5",
+      "count": 7,
+      "percent_of_split": 0.003498
+    },
+    {
+      "action_index": 56,
+      "label": "BuyShopItem_VoucherShopOfferings_2",
+      "count": 4,
+      "percent_of_split": 0.001999
+    },
+    {
+      "action_index": 92,
+      "label": "SWAP_0_4",
+      "count": 4,
+      "percent_of_split": 0.001999
+    },
+    {
+      "action_index": 39,
+      "label": "SelectCard_TarotSpectralHand_10",
+      "count": 4,
+      "percent_of_split": 0.001999
+    },
+    {
+      "action_index": 101,
+      "label": "SWAP_1_5",
+      "count": 2,
+      "percent_of_split": 0.000999
+    },
+    {
+      "action_index": 108,
+      "label": "SWAP_2_5",
+      "count": 2,
+      "percent_of_split": 0.000999
+    },
+    {
+      "action_index": 128,
+      "label": "SWAP_6_7",
+      "count": 2,
+      "percent_of_split": 0.000999
+    },
+    {
+      "action_index": 27,
+      "label": "SelectCard_CurrentHand_13",
+      "count": 2,
+      "percent_of_split": 0.000999
+    },
+    {
+      "action_index": 64,
+      "label": "BuyShopItem_TopShelfShopOfferings_4",
+      "count": 1,
+      "percent_of_split": 0.0005
+    },
+    {
+      "action_index": 93,
+      "label": "SWAP_0_5",
+      "count": 1,
+      "percent_of_split": 0.0005
+    },
+    {
+      "action_index": 88,
+      "label": "SellItem_CurrentConsumables_3",
+      "count": 1,
+      "percent_of_split": 0.0005
+    },
+    {
+      "action_index": 13,
+      "label": "UseConsumable_CurrentConsumables_3",
+      "count": 1,
+      "percent_of_split": 0.0005
+    },
+    {
+      "action_index": 70,
+      "label": "BuyShopItem_TopShelfShopOfferings_10",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 71,
+      "label": "BuyShopItem_TopShelfShopOfferings_11",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 72,
+      "label": "BuyShopItem_TopShelfShopOfferings_12",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 73,
+      "label": "BuyShopItem_TopShelfShopOfferings_13",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 74,
+      "label": "BuyShopItem_TopShelfShopOfferings_14",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 65,
+      "label": "BuyShopItem_TopShelfShopOfferings_5",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 66,
+      "label": "BuyShopItem_TopShelfShopOfferings_6",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 67,
+      "label": "BuyShopItem_TopShelfShopOfferings_7",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 68,
+      "label": "BuyShopItem_TopShelfShopOfferings_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 69,
+      "label": "BuyShopItem_TopShelfShopOfferings_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 57,
+      "label": "BuyShopItem_VoucherShopOfferings_3",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 94,
+      "label": "SWAP_0_6",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 95,
+      "label": "SWAP_0_7",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 96,
+      "label": "SWAP_0_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 97,
+      "label": "SWAP_0_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 102,
+      "label": "SWAP_1_6",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 103,
+      "label": "SWAP_1_7",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 104,
+      "label": "SWAP_1_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 105,
+      "label": "SWAP_1_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 109,
+      "label": "SWAP_2_6",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 110,
+      "label": "SWAP_2_7",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 111,
+      "label": "SWAP_2_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 112,
+      "label": "SWAP_2_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 115,
+      "label": "SWAP_3_6",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 116,
+      "label": "SWAP_3_7",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 117,
+      "label": "SWAP_3_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 118,
+      "label": "SWAP_3_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 120,
+      "label": "SWAP_4_6",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 121,
+      "label": "SWAP_4_7",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 122,
+      "label": "SWAP_4_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 123,
+      "label": "SWAP_4_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 125,
+      "label": "SWAP_5_7",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 126,
+      "label": "SWAP_5_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 127,
+      "label": "SWAP_5_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 129,
+      "label": "SWAP_6_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 130,
+      "label": "SWAP_6_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 131,
+      "label": "SWAP_7_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 132,
+      "label": "SWAP_7_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 133,
+      "label": "SWAP_8_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 28,
+      "label": "SelectCard_CurrentHand_14",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 40,
+      "label": "SelectCard_TarotSpectralHand_11",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 41,
+      "label": "SelectCard_TarotSpectralHand_12",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 42,
+      "label": "SelectCard_TarotSpectralHand_13",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 43,
+      "label": "SelectCard_TarotSpectralHand_14",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 49,
+      "label": "SelectPackItem_PackOfferings_5",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 83,
+      "label": "SellItem_CurrentJokers_8",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 84,
+      "label": "SellItem_CurrentJokers_9",
+      "count": 0,
+      "percent_of_split": 0.0
+    },
+    {
+      "action_index": 0,
+      "label": "StartNewRun",
+      "count": 0,
+      "percent_of_split": 0.0
+    }
+  ],
+  "per_subevent": [
+    {
+      "subevent": "selectcard",
+      "count": 103864,
+      "percent_of_split": 51.897488
+    },
+    {
+      "subevent": "rerollshop",
+      "count": 14877,
+      "percent_of_split": 7.433557
+    },
+    {
+      "subevent": "playhand",
+      "count": 13904,
+      "percent_of_split": 6.94738
+    },
+    {
+      "subevent": "discardhand",
+      "count": 9794,
+      "percent_of_split": 4.893746
+    },
+    {
+      "subevent": "useconsumable",
+      "count": 7244,
+      "percent_of_split": 3.619593
+    },
+    {
+      "subevent": "cashout",
+      "count": 6306,
+      "percent_of_split": 3.150905
+    },
+    {
+      "subevent": "selectblind",
+      "count": 5747,
+      "percent_of_split": 2.87159
+    },
+    {
+      "subevent": "leaveshop",
+      "count": 5110,
+      "percent_of_split": 2.553302
+    },
+    {
+      "subevent": "buyandopenplanetstandardbuffoonpack",
+      "count": 5103,
+      "percent_of_split": 2.549804
+    },
+    {
+      "subevent": "buyandopentarotspectralpack",
+      "count": 3459,
+      "percent_of_split": 1.728351
+    },
+    {
+      "subevent": "buyanduseconsumable",
+      "count": 3319,
+      "percent_of_split": 1.658397
+    },
+    {
+      "subevent": "selectpackitemtarot",
+      "count": 3305,
+      "percent_of_split": 1.651402
+    },
+    {
+      "subevent": "sellconsumable",
+      "count": 2454,
+      "percent_of_split": 1.226185
+    },
+    {
+      "subevent": "selljoker",
+      "count": 2443,
+      "percent_of_split": 1.220688
+    },
+    {
+      "subevent": "buytopshelfjoker",
+      "count": 2402,
+      "percent_of_split": 1.200202
+    },
+    {
+      "subevent": "selectpackitemplanet",
+      "count": 2353,
+      "percent_of_split": 1.175718
+    },
+    {
+      "subevent": "buytopshelfconsumable",
+      "count": 1822,
+      "percent_of_split": 0.910395
+    },
+    {
+      "subevent": "swap",
+      "count": 1544,
+      "percent_of_split": 0.771487
+    },
+    {
+      "subevent": "buyvoucher",
+      "count": 1538,
+      "percent_of_split": 0.768489
+    },
+    {
+      "subevent": "skipplanetstandardbuffoonpack",
+      "count": 1324,
+      "percent_of_split": 0.66156
+    },
+    {
+      "subevent": "selectpackitemcard",
+      "count": 784,
+      "percent_of_split": 0.391739
+    },
+    {
+      "subevent": "selectpackitemjoker",
+      "count": 645,
+      "percent_of_split": 0.322286
+    },
+    {
+      "subevent": "skipbigblind",
+      "count": 642,
+      "percent_of_split": 0.320787
+    },
+    {
+      "subevent": "rerollbossblind",
+      "count": 137,
+      "percent_of_split": 0.068454
+    },
+    {
+      "subevent": "skiptarotspectralpack",
+      "count": 13,
+      "percent_of_split": 0.006496
+    }
+  ]
+}
