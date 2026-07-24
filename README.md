@@ -36,7 +36,7 @@ Supporting offline metrics and dataset reports are under [`results/`](results/).
 
 ## Literature
 
-- Many of these issues have already been addressed by several existing pieces of literature, including [Chain of Thought Imitation with Procedure Cloning](https://arxiv.org/abs/2205.10816), [Policy improvement by planning with Gumbel](https://openreview.net/forum?id=bERaNdoegnO), [Efficient Multi-agent Reinforcement Learning by Planning](https://openreview.net/forum?id=CpnKq3UJwp) and [Planning in stochastic environments with a learned model](https://openreview.net/pdf?id=X6D9bAHhBQ1)
+- Many of these issues have already been addressed by several existing pieces of literature, including [Chain of Thought Imitation with Procedure Cloning](https://arxiv.org/abs/2205.10816), [Policy improvement by planning with Gumbel](https://openreview.net/forum?id=bERaNdoegnO), [Efficient Multi-agent Reinforcement Learning by Planning](https://openreview.net/forum?id=CpnKq3UJwp) and [Planning in stochastic environments with a learned model](https://openreview.net/forum?id=X6D9bAHhBQ1)
 
 ## Going Forward
 
