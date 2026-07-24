@@ -29,22 +29,21 @@ flowchart LR
 ## Performance
 
 - The model chose the correct action from an expert demonstration with 74% accuracy, and contained the correct decision within its top-3 actions 93% of the time, which was promising. However, in practice it performed very poorly, unable to pass the first blind with consistency.
-- As it turns out, a decomposed action space leads to compounding errors, which is detrimental to long-run performance even over the course of a few actions.
-- Furthermore, actions that are underrepresented (like `SELL_JOKER_9`) and that do not have strong corresponding signals will not be chosen by the model, despite using techniques like DAgger and logit adjustment.
+- This poor performance is almost certainly a direct drawback of *behavior cloning*. A traditional behavior cloning training loop iterates over an expert dataset and minimizes a loss between the model's predicted action and the expert's demonstrated action for each state. The key insight is that the internal chain-of-thought, or *procedure* that the expert used to arrive at an action is absent from the training process. 
+- This oversimplified architecture often leads to rapid overfitting and poor generalization which is what was observed during the training process for the model presented in this repository.
 
 Supporting offline metrics and dataset reports are under [`results/`](results/).
 
 ## Literature
 
-- Many of these issues have already been addressed by AlphaZero, a chess, shogi, and go agent developed by Google DeepMind in 2017. The solution for reasoning-heavy tasks is to leverage compute using simulators and value estimators.
-- This is in stark contrast to AlphaStar, Google DeepMind's StarCraft II agent, which used a factorized hierarchical policy transformer and a decomposed action space.
+- Many of these issues have already been addressed by several existing pieces of literature, including [Chain of Thought Imitation with Procedure Cloning](https://arxiv.org/abs/2205.10816), [Policy improvement by planning with Gumbel](https://openreview.net/forum?id=bERaNdoegnO), [Efficient Multi-agent Reinforcement Learning by Planning](https://openreview.net/forum?id=CpnKq3UJwp) and [Planning in stochastic environments with a learned model](https://openreview.net/pdf?id=X6D9bAHhBQ1)
 
 ## Going Forward
 
-- In order to create an agent that is capable of playing an incomplete-information, stochastic, reasoning-heavy game, we need to use a very different approach.
-- Instead of having a model make decisions directly, we train state estimators based on expert demonstration and simulate the results of high-level actions.
-- Based on the results of several simulations and value estimates of each one, we can determine an "optimal" path and avoid the pitfalls of compounding error.
-- The downside is that this requires a very hardware-friendly simulator, which does not exist for Balatro. I am working on this.
+- A different approach is needed in order to create an agent that is capable of playing or imitating the actions of an expert in an incomplete-information, stochastic, reasoning-heavy game.
+- *Procedure cloning* is a promising alternative to *behavior cloning* but requires an expert dataset with procedure information for each state-action pair. A possibility is to reconstruct the procedure using MCTS.
+- Alternatively, it might serve to instead use an expert dataset a prior for an alphazero-style reinforcement learning agent and fine-tune using online reinforcement learning.
+- A downside of these approaches is the heavy reliance on MCTS and thus the need for an effecient simulator and hardware to support the compute requirements.
 
 ## What's in this repo
 
